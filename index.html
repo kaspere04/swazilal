@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام محاسبة SMART WIFI AZILAL</title>
+    <style>
+        :root { --primary: #FFD400; --dark: #111; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: var(--bg); color: #333; padding-bottom: 50px; }
+        
+        header { background: var(--dark); color: var(--primary); text-align: center; padding: 25px; border-bottom: 5px solid var(--primary); }
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+
+        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; margin-bottom: 15px; border-right: 4px solid var(--primary); padding-right: 10px; }
+
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: var(--dark); color: var(--primary); width: 100%; padding: 15px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        th { background: #f9f9f9; }
+
+        .debt-tag { color: var(--danger); font-weight: bold; }
+        .paid-tag { color: var(--success); font-weight: bold; }
+
+        /* واجهة المشترك */
+        .client-view { background: #eef2f3; border: 2px dashed #999; }
+        #search-result { margin-top: 15px; padding: 15px; background: white; border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>SMART WIFI AZILAL</h1>
+    <p>نظام إدارة الاشتراكات والديون المتراكمة</p>
+</header>
+
+<div class="container">
+    <div class="grid">
+        <!-- قسم الإدارة: إضافة مشترك -->
+        <div class="box">
+            <h2>👤 تسجيل مشترك جديد</h2>
+            <input type="text" id="m-name" placeholder="الاسم الكامل للمشترك">
+            <input type="number" id="m-price" placeholder="مبلغ الاشتراك الشهري (مثلاً 100)">
+            <label>تاريخ بداية الاشتراك:</label>
+            <input type="month" id="m-start-date">
+            <button class="btn-add" onclick="addMember()">+ إضافة للمنظومة</button>
+        </div>
+
+        <!-- قسم الإدارة: تسجيل دفعة -->
+        <div class="box">
+            <h2>💰 تسجيل عملية دفع</h2>
+            <select id="p-member"></select>
+            <div style="display: flex; gap: 5px;">
+                <select id="p-month">
+                    <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+                    <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+                    <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+                    <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
+                </select>
+                <input type="number" id="p-year" value="2026">
+            </div>
+            <button class="btn-add" style="background: var(--success); color: white;" onclick="recordPayment()">✓ تأكيد الدفع</button>
+        </div>
+    </div>
+
+    <!-- لوحة المراقبة العامة للمدير -->
+    <div class="box">
+        <h2>📊 حالة جميع المشتركين (رؤية المدير)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>المشترك</th>
+                    <th>الاشتراك</th>
+                    <th>الأشهر المدفوعة</th>
+                    <th>المتأخرات</th>
+                    <th>المبلغ العالق</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody id="admin-table"></tbody>
+        </table>
+    </div>
+
+    <hr style="margin: 40px 0;">
+
+    <!-- قسم المشترك (يمكن فصله) -->
+    <div class="box client-view">
+        <h2>🔍 بوابة المشترك (للاستعلام فقط)</h2>
+        <p style="font-size: 0.8rem; margin-bottom: 10px;">أدخل اسمك كما هو مسجل لرؤية وضعيتك المالية:</p>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="user-search" placeholder="اكتب اسمك هنا...">
+            <button onclick="checkStatus()" style="padding: 0 20px; background: var(--dark); color: white; border-radius: 8px;">بحث</button>
+        </div>
+        <div id="search-result"></div>
+    </div>
+</div>
+
+<script>
+    // البيانات: المشتركين والدفعات
+    let data = JSON.parse(localStorage.getItem('smart_wifi_v3')) || { members: [], payments: [] };
+
+    function save() { localStorage.setItem('smart_wifi_v3', JSON.stringify(data)); }
+
+    function addMember() {
+        const name = document.getElementById('m-name').value.trim();
+        const price = document.getElementById('m-price').value;
+        const start = document.getElementById('m-start-date').value;
+
+        if(!name || !price || !start) return alert("اكمل البيانات");
+
+        data.members.push({ id: Date.now(), name, price: Number(price), startDate: start });
+        save();
+        refreshAll();
+    }
+
+    function recordPayment() {
+        const memberId = document.getElementById('p-member').value;
+        const month = document.getElementById('p-month').value;
+        const year = document.getElementById('p-year').value;
+
+        if(!memberId) return;
+
+        // منع تكرار دفع نفس الشهر
+        const exists = data.payments.find(p => p.memberId == memberId && p.month == month && p.year == year);
+        if(exists) return alert("هذا الشهر مسجل كمدفوع مسبقاً!");
+
+        data.payments.push({ memberId: Number(memberId), month: Number(month), year: Number(year) });
+        save();
+        refreshAll();
+        alert("تم تسجيل الدفعة بنجاح");
+    }
+
+    function calculateDebt(member) {
+        const start = new Date(member.startDate + "-01");
+        const now = new Date(); // التاريخ الحالي (ماي 2026 حسب النظام)
+        
+        let monthsToPay = [];
+        let temp = new Date(start);
+
+        while (temp <= now) {
+            monthsToPay.push({ month: temp.getMonth() + 1, year: temp.getFullYear() });
+            temp.setMonth(temp.getMonth() + 1);
+        }
+
+        const paidMonths = data.payments.filter(p => p.memberId === member.id);
+        
+        const unpaid = monthsToPay.filter(m => 
+            !paidMonths.find(p => p.month === m.month && p.year === m.year)
+        );
+
+        return {
+            unpaidCount: unpaid.length,
+            unpaidDetails: unpaid,
+            totalDebt: unpaid.length * member.price,
+            paidDetails: paidMonths
+        };
+    }
+
+    function refreshAll() {
+        const adminTable = document.getElementById('admin-table');
+        const pMemberSelect = document.getElementById('p-member');
+        
+        adminTable.innerHTML = '';
+        pMemberSelect.innerHTML = '<option value="">-- اختر مشتركاً --</option>';
+
+        data.members.forEach(m => {
+            const debtInfo = calculateDebt(m);
+            
+            // تحديث جدول المدير
+            adminTable.innerHTML += `
+                <tr>
+                    <td><b>${m.name}</b></td>
+                    <td>${m.price} DH</td>
+                    <td><span class="paid-tag">${debtInfo.paidDetails.length} أشهر</span></td>
+                    <td><span class="debt-tag">${debtInfo.unpaidCount} أشهر</span></td>
+                    <td style="background: ${debtInfo.totalDebt > 0 ? '#fff0f0' : '#f0fff0'}">
+                        <b>${debtInfo.totalDebt} DH</b>
+                    </td>
+                    <td><button onclick="deleteMember(${m.id})" style="color:red; background:none; font-size:1.2rem;">×</button></td>
+                </tr>
+            `;
+
+            // تحديث قائمة الاختيار في الدفع
+            pMemberSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+        });
+    }
+
+    function checkStatus() {
+        const searchName = document.getElementById('user-search').value.toLowerCase();
+        const member = data.members.find(m => m.name.toLowerCase().includes(searchName));
+        const resDiv = document.getElementById('search-result');
+
+        if(!member || searchName === "") {
+            resDiv.style.display = "block";
+            resDiv.innerHTML = "<p style='color:red'>عذراً، لم يتم العثور على اسم بهذا الشكل.</p>";
+            return;
+        }
+
+        const debt = calculateDebt(member);
+        resDiv.style.display = "block";
+        resDiv.innerHTML = `
+            <h3>مرحباً ${member.name} 👋</h3>
+            <hr style="margin:10px 0">
+            <p>💰 ثمن اشتراكك الشهري: <b>${member.price} DH</b></p>
+            <p>✅ الأشهر المستخلصة: <span class="paid-tag">${debt.paidDetails.length}</span></p>
+            <p>⚠️ الأشهر العالقة: <span class="debt-tag">${debt.unpaidCount}</span></p>
+            <div style="background:#f9f9f9; padding:10px; margin:10px 0; border-radius:5px">
+                <b>تفاصيل الشهور المطلوبة:</b><br>
+                ${debt.unpaidDetails.map(d => `الشهر ${d.month} لعام ${d.year}`).join(' | ') || 'لا يوجد، أنت مخلص!'}
+            </div>
+            <h2 style="color:var(--danger)">المجموع الكلي المطلوب أداؤه: ${debt.totalDebt} DH</h2>
+        `;
+    }
+
+    function deleteMember(id) {
+        if(confirm("هل تريد حذف المشترك وكل سجلات دفعه؟")) {
+            data.members = data.members.filter(m => m.id !== id);
+            data.payments = data.payments.filter(p => p.memberId !== id);
+            save();
+            refreshAll();
+        }
+    }
+
+    refreshAll();
+</script>
+</body>
+</html>
