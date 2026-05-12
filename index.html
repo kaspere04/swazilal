@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART WIFI AZILAL - CLOUD SYSTEM</title>
+    <title>SMART WIFI AZILAL - CLOUD READY</title>
     
-    <!-- استدعاء مكتبات Firebase السحابية -->
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -30,112 +30,122 @@
 
 <header>
     <h1>SMART WIFI AZILAL</h1>
-    <p>النظام السحابي الموحد</p>
+    <p>نظام إدارة الاشتراكات الذكي</p>
 </header>
 
 <div class="container">
-    <!-- بوابة الزبائن -->
-    <div class="box" style="border: 2px solid var(--primary);">
-        <h2>🔍 بوابة الزبائن</h2>
+    <div class="box">
+        <h2>🔍 فحص الاشتراك</h2>
         <div style="display: flex; gap: 5px;">
-            <input type="text" id="user-search" placeholder="اسمك الكامل...">
+            <input type="text" id="user-search" placeholder="أدخل اسمك الكامل...">
             <button onclick="checkStatus()" style="background: var(--dark); color: white;">بحث</button>
         </div>
         <div id="search-result"></div>
     </div>
 
-    <center><button onclick="unlockAdmin()" style="background:none; color:#888; font-size:0.7rem;">⚙️ دخول الإدارة</button></center>
+    <center><button onclick="unlockAdmin()" style="background:none; color:#888; font-size:0.7rem; margin:10px;">⚙️ الإدارة</button></center>
 
-    <!-- لوحة المدير -->
     <div id="admin-panel">
         <div class="box">
-            <h2>👤 إضافة/تعديل</h2>
+            <h2>👤 إضافة مشترك</h2>
             <input type="text" id="m-name" placeholder="الاسم الكامل">
-            <input type="number" id="m-price" placeholder="المبلغ">
+            <input type="number" id="m-price" placeholder="المبلغ الشهري (DH)">
             <input type="month" id="m-start-date">
-            <button class="btn-admin" onclick="addMember()">حفظ في السحابة</button>
+            <button class="btn-admin" onclick="addMember()">حفظ المشترك</button>
         </div>
 
         <div class="box">
-            <h2>💰 تسجيل أداء شهر</h2>
+            <h2>💰 تسجيل استخلاص</h2>
             <select id="p-member"></select>
             <div style="display: flex; gap: 5px;">
                 <select id="p-month">
-                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                    <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                    <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+                    <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+                    <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+                    <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
                 </select>
                 <input type="number" id="p-year" value="2026">
             </div>
-            <button onclick="recordPayment()" style="background: var(--success); color: white; width: 100%;">تأكيد الدفع</button>
+            <button onclick="recordPayment()" style="background: var(--success); color: white; width: 100%;">تأكيد الأداء</button>
         </div>
 
         <div class="box" style="overflow-x: auto;">
-            <h2>📊 الرقابة</h2>
+            <h2>📊 الرقابة العامة</h2>
             <table id="admin-table">
-                <thead><tr><th>المشترك</th><th>المدفوع</th><th>الدين</th><th>حذف</th></tr></thead>
+                <thead><tr><th>المشترك</th><th>الشهور المؤداة</th><th>الديون</th><th>حذف</th></tr></thead>
                 <tbody id="admin-body"></tbody>
-            </table>
-        </div>
-
-        <div class="box" style="overflow-x: auto;">
-            <h2>🧾 سجل العمليات</h2>
-            <table id="history-table">
-                <thead><tr><th>المشترك</th><th>الشهر</th><th>إجراء</th></tr></thead>
-                <tbody id="history-body"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. إعدادات FIREBASE (يجب استبدالها بمعلومات مشروعك)
-    const firebaseConfig = {
-        apiKey: "AIzaSy...", 
-        authDomain: "your-project.firebaseapp.com",
-        databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-        projectId: "your-project",
-        storageBucket: "your-project.appspot.com",
-        messagingSenderId: "...",
-        appId: "..."
-    };
+    // --- إعدادات Firebase (اتركها فارغة حتى تملأها لاحقاً) ---
+    const firebaseConfig = { apiKey: "", databaseURL: "" }; 
 
-    // تهيئة Firebase
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let useFirebase = false;
+    if (firebaseConfig.apiKey !== "") {
+        firebase.initializeApp(firebaseConfig);
+        useFirebase = true;
+    }
 
-    // فتح الإدارة
+    // الذاكرة الاحتياطية (لتعمل محلياً في حال غياب Firebase)
+    let localDB = JSON.parse(localStorage.getItem('azilal_wifi_cloud')) || { members: {}, payments: {} };
+
+    function syncData(data) {
+        if (data) {
+            localDB = data;
+            localStorage.setItem('azilal_wifi_cloud', JSON.stringify(localDB));
+        }
+        renderAll();
+    }
+
+    if (useFirebase) {
+        firebase.database().ref('wifi').on('value', (snap) => syncData(snap.val()));
+    } else {
+        syncData();
+    }
+
     function unlockAdmin() {
         if(prompt("كلمة السر:") === "1234") document.getElementById('admin-panel').style.display = "block";
     }
 
-    // إضافة مشترك للسحابة
     function addMember() {
-        const name = document.getElementById('m-name').value;
+        const name = document.getElementById('m-name').value.trim();
         const price = document.getElementById('m-price').value;
         const start = document.getElementById('m-start-date').value;
-        if(!name || !price || !start) return alert("أكمل الخانات");
         
-        db.ref('wifi/members').push({ name, price: Number(price), startDate: start });
-        alert("تم الحفظ سحابياً");
+        if(!name || !price || !start) return alert("أكمل البيانات");
+
+        const newId = "m_" + Date.now();
+        const memberData = { name, price: Number(price), startDate: start };
+
+        if (useFirebase) {
+            firebase.database().ref('wifi/members/' + newId).set(memberData);
+        } else {
+            localDB.members[newId] = memberData;
+            syncData();
+        }
+        alert("تم الحفظ بنجاح");
     }
 
-    // تسجيل دفعة للسحابة
     function recordPayment() {
         const mId = document.getElementById('p-member').value;
         const month = document.getElementById('p-month').value;
         const year = document.getElementById('p-year').value;
         if(!mId) return;
 
-        db.ref('wifi/payments').push({ mId, month: Number(month), year: Number(year), at: new Date().toLocaleString() });
-    }
+        const payId = "p_" + Date.now();
+        const payData = { mId, month: Number(month), year: Number(year), at: new Date().toLocaleString() };
 
-    // الاستماع المباشر للتغييرات (Realtime Sync)
-    db.ref('wifi').on('value', (snap) => {
-        const data = snap.val() || { members: {}, payments: {} };
-        renderAll(data);
-    });
+        if (useFirebase) {
+            firebase.database().ref('wifi/payments/' + payId).set(payData);
+        } else {
+            if (!localDB.payments) localDB.payments = {};
+            localDB.payments[payId] = payData;
+            syncData();
+        }
+    }
 
     function calculateDebt(id, member, allPayments) {
         const start = new Date(member.startDate + "-01");
@@ -151,17 +161,18 @@
         return { unpaid, paid, totalDebt: unpaid.length * member.price };
     }
 
-    function renderAll(data) {
+    function renderAll() {
         const adminBody = document.getElementById('admin-body');
-        const historyBody = document.getElementById('history-body');
         const select = document.getElementById('p-member');
-        
-        adminBody.innerHTML = ''; historyBody.innerHTML = '';
-        select.innerHTML = '<option value="">-- اختر --</option>';
+        adminBody.innerHTML = ''; 
+        select.innerHTML = '<option value="">-- اختر مشتركاً --</option>';
 
-        for(let id in data.members) {
-            const m = data.members[id];
-            const debt = calculateDebt(id, m, data.payments);
+        const members = localDB.members || {};
+        const payments = localDB.payments || {};
+
+        for(let id in members) {
+            const m = members[id];
+            const debt = calculateDebt(id, m, payments);
             adminBody.innerHTML += `<tr>
                 <td><b>${m.name}</b></td>
                 <td>${debt.paid.map(p => `<span class="paid-badge">${p.month}/${p.year}</span>`).join('')}</td>
@@ -170,37 +181,35 @@
             </tr>`;
             select.innerHTML += `<option value="${id}">${m.name}</option>`;
         }
-
-        const pays = data.payments || {};
-        Object.keys(pays).reverse().forEach(pId => {
-            const p = pays[pId];
-            const m = data.members[p.mId];
-            if(m) historyBody.innerHTML += `<tr>
-                <td>${m.name}</td><td>${p.month}/${p.year}</td>
-                <td><button onclick="cancelPay('${pId}')" style="background:red; color:white; padding:2px 5px;">إلغاء</button></td>
-            </tr>`;
-        });
     }
 
     function checkStatus() {
-        const search = document.getElementById('user-search').value.toLowerCase();
-        db.ref('wifi').once('value', (snap) => {
-            const data = snap.val();
-            const mId = Object.keys(data.members).find(id => data.members[id].name.toLowerCase().includes(search));
-            if(!mId) return alert("الاسم غير موجود");
-            const m = data.members[mId];
-            const debt = calculateDebt(mId, m, data.payments);
-            document.getElementById('search-result').innerHTML = `
-                <div style="background:#fffdf2; padding:15px; border-radius:10px; margin-top:10px; border:1px solid #FFD400">
-                    <h3>مرحباً ${m.name}</h3>
-                    <h2 style="color:red">الواجب أداؤه: ${debt.totalDebt} DH</h2>
-                    <p>الشهور المطلوبة: ${debt.unpaid.map(d => d.m+'/'+d.y).join(' | ')}</p>
-                </div>`;
-        });
+        const search = document.getElementById('user-search').value.toLowerCase().trim();
+        const members = localDB.members || {};
+        const mId = Object.keys(members).find(id => members[id].name.toLowerCase().includes(search));
+        
+        if(!mId) return alert("الاسم غير مسجل");
+        
+        const m = members[mId];
+        const debt = calculateDebt(mId, m, localDB.payments);
+        document.getElementById('search-result').innerHTML = `
+            <div style="background:#fffdf2; padding:15px; border-radius:10px; margin-top:10px; border:2px solid #FFD400">
+                <h3>مرحباً ${m.name}</h3>
+                <h2 style="color:red">الواجب أداؤه: ${debt.totalDebt} DH</h2>
+                <p style="font-size:0.8rem">الأشهر غير المؤداة: ${debt.unpaid.map(d => d.m+'/'+d.y).join(' | ')}</p>
+            </div>`;
     }
 
-    function deleteMember(id) { if(confirm("حذف المشترك؟")) db.ref('wifi/members/'+id).remove(); }
-    function cancelPay(id) { if(confirm("إلغاء الدفعة؟")) db.ref('wifi/payments/'+id).remove(); }
+    function deleteMember(id) {
+        if(confirm("حذف؟")) {
+            if (useFirebase) {
+                firebase.database().ref('wifi/members/' + id).remove();
+            } else {
+                delete localDB.members[id];
+                syncData();
+            }
+        }
+    }
 </script>
 </body>
 </html>
