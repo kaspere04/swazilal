@@ -4,74 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart WiFi Azilal</title>
-
-    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
     <style>
         :root { --primary: #FFD400; --dark: #111; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #333; }
-        
-        /* واجهة الزبناء */
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 30px; cursor: pointer; }
+        header { background: var(--dark); color: var(--primary); text-align: center; padding: 30px; cursor: pointer; border-bottom: 4px solid var(--primary); }
         .container { max-width: 1000px; margin: auto; padding: 20px; }
-        .client-view { text-align: center; padding: 50px 20px; }
-        .status-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 20px; }
-
-        /* واجهة الإدارة (مخفية افتراضياً) */
-        #admin-panel { display: none; margin-top: 30px; }
-        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid var(--primary); }
-        
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1.5px solid #eee; border-radius: 10px; }
-        button { cursor: pointer; border: none; border-radius: 10px; font-weight: bold; padding: 12px; width: 100%; transition: 0.3s; }
+        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        #admin-panel { display: none; animation: fadeIn 0.5s; }
+        input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; }
+        button { cursor: pointer; border: none; border-radius: 12px; font-weight: bold; padding: 15px; width: 100%; transition: 0.3s; }
         .btn-admin { background: var(--dark); color: var(--primary); }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        .badge { padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
-        .active { background: #e8f5e9; color: var(--success); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<header onclick="checkAdmin()">
+<header onclick="accessAdmin()">
     <h1>SMART WIFI AZILAL</h1>
     <p>Service Internet Haute Vitesse</p>
 </header>
 
 <div class="container">
-    <!-- واجهة الزبناء العامة -->
-    <div id="client-view" class="client-view">
-        <div class="status-card">
-            <h2 id="welcome-msg">Bienvenue chez Smart WiFi</h2>
-            <p style="margin-top:10px; color:#666;">Entrez votre nom pour vérifier votre abonnement</p>
-            <input type="text" id="search-client" placeholder="Votre Nom..." style="margin-top:20px; text-align:center;" oninput="searchStatus()">
-            <div id="client-result" style="margin-top:20px; font-weight:bold;"></div>
-        </div>
+    <!-- واجهة الزبون -->
+    <div id="client-view" class="box" style="text-align: center;">
+        <h2>Vérifier mon abonnement</h2>
+        <input type="text" id="search-input" placeholder="Entrez votre nom..." oninput="checkStatus()">
+        <div id="result-area" style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;"></div>
     </div>
 
-    <!-- واجهة الإدارة المخفية -->
+    <!-- واجهة الإدارة -->
     <div id="admin-panel">
-        <div class="stats" style="display:flex; gap:10px; margin-bottom:20px;">
-            <div class="box" style="flex:1; text-align:center;"><h3>Total</h3><p id="stat-count">0</p></div>
-            <div class="box" style="flex:1; text-align:center;"><h3>Revenus</h3><p id="stat-money">0 DH</p></div>
-        </div>
-
         <div class="box">
-            <h2>➕ Ajouter un Client</h2>
-            <input type="text" id="m-name" placeholder="Nom Complet">
+            <h2>➕ Nouvel Abonné</h2>
+            <input type="text" id="m-name" placeholder="Nom du client">
             <input type="number" id="m-price" placeholder="Prix (DH)">
             <input type="month" id="m-date" value="2026-05">
-            <button class="btn-admin" onclick="addMember()">Enregistrer ✅</button>
+            <button class="btn-admin" onclick="saveToCloud()">Enregistrer dans le Cloud ✅</button>
         </div>
 
         <div class="box">
-            <h2>📋 Liste des Abonnés</h2>
+            <h2>📋 Liste Management</h2>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>Nom</th><th>Prix</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Nom</th><th>Prix</th><th>Date</th><th>Action</th></tr></thead>
                     <tbody id="admin-table"></tbody>
                 </table>
             </div>
@@ -80,7 +60,6 @@
 </div>
 
 <script>
-    // إعدادات Firebase SMAZILAL
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
@@ -93,72 +72,62 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let allMembers = {};
+    let dataCache = {};
 
-    // دالة الدخول للإدارة (اضغط على العنوان 5 مرات)
-    let clickCount = 0;
-    function checkAdmin() {
-        clickCount++;
-        if (clickCount === 5) {
-            const pass = prompt("Mot de passe Admin:");
-            if (pass === "1234") { // يمكنك تغيير كلمة المرور هنا
+    // الدخول للإدارة: اضغط على العنوان 5 مرات
+    let clicks = 0;
+    function accessAdmin() {
+        clicks++;
+        if(clicks === 5) {
+            if(prompt("Mot de passe:") === "1234") {
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('client-view').style.display = 'none';
             }
-            clickCount = 0;
+            clicks = 0;
         }
     }
 
-    function addMember() {
+    function saveToCloud() {
         const name = document.getElementById('m-name').value;
         const price = document.getElementById('m-price').value;
         const date = document.getElementById('m-date').value;
-        if (!name || !price) return alert("Remplir les champs!");
-
+        if(!name || !price) return alert("Champs vides!");
+        
         const id = Date.now();
-        db.ref('members/' + id).set({ name, price, date, status: "active" });
+        db.ref('members/' + id).set({ name, price, date });
         document.getElementById('m-name').value = "";
     }
 
     db.ref('members/').on('value', (snap) => {
-        allMembers = snap.val() || {};
-        renderAdminTable();
-    });
-
-    function renderAdminTable() {
+        dataCache = snap.val() || {};
         const tbody = document.getElementById('admin-table');
         tbody.innerHTML = "";
-        let total = 0, count = 0;
-        for (let id in allMembers) {
-            count++; total += parseInt(allMembers[id].price);
+        for(let id in dataCache) {
             tbody.innerHTML += `<tr>
-                <td>${allMembers[id].name}</td>
-                <td>${allMembers[id].price} DH</td>
-                <td>${allMembers[id].date}</td>
-                <td><span class="badge active">Active</span></td>
-                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">Supprimer</button></td>
+                <td>${dataCache[id].name}</td>
+                <td>${dataCache[id].price} DH</td>
+                <td>${dataCache[id].date || '---'}</td>
+                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">X</button></td>
             </tr>`;
         }
-        document.getElementById('stat-count').innerText = count;
-        document.getElementById('stat-money').innerText = total + " DH";
-    }
+    });
 
     function deleteMember(id) { if(confirm("Supprimer?")) db.ref('members/' + id).remove(); }
 
-    // دالة بحث الزبون عن حالته
-    function searchStatus() {
-        const query = document.getElementById('search-client').value.toLowerCase();
-        const resDiv = document.getElementById('client-result');
-        if (!query) { resDiv.innerHTML = ""; return; }
+    // دالة البحث للزبون (تصلح مشكلة undefined)
+    function checkStatus() {
+        const val = document.getElementById('search-input').value.toLowerCase();
+        const res = document.getElementById('result-area');
+        if(!val) { res.innerHTML = ""; return; }
         
         let found = false;
-        for (let id in allMembers) {
-            if (allMembers[id].name.toLowerCase().includes(query)) {
-                resDiv.innerHTML = `<span style="color:var(--success)">✅ Abonnement Valide jusqu'au: ${allMembers[id].date}</span>`;
+        for(let id in dataCache) {
+            if(dataCache[id].name.toLowerCase().includes(val)) {
+                res.innerHTML = `<span style="color:var(--success)">✅ Expire le: ${dataCache[id].date || 'Non défini'}</span>`;
                 found = true; break;
             }
         }
-        if (!found) resDiv.innerHTML = `<span style="color:var(--danger)">❌ Nom non trouvé</span>`;
+        if(!found) res.innerHTML = `<span style="color:var(--danger)">❌ Non trouvé</span>`;
     }
 </script>
 </body>
