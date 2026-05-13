@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart WiFi Azilal</title>
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #FFD400; --dark: #111; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #333; }
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 30px; cursor: pointer; border-bottom: 4px solid var(--primary); }
+        header { background: var(--dark); color: var(--primary); text-align: center; padding: 30px; border-bottom: 4px solid var(--primary); }
         .container { max-width: 1000px; margin: auto; padding: 20px; }
         .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        #admin-panel { display: none; animation: fadeIn 0.5s; }
+        #admin-panel { display: none; }
         input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; }
         button { cursor: pointer; border: none; border-radius: 12px; font-weight: bold; padding: 15px; width: 100%; transition: 0.3s; }
         .btn-admin { background: var(--dark); color: var(--primary); }
+        .btn-footer { background: none; color: #999; font-size: 0.8rem; margin-top: 50px; text-decoration: underline; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<header onclick="accessAdmin()">
+<header>
     <h1>SMART WIFI AZILAL</h1>
     <p>Service Internet Haute Vitesse</p>
 </header>
@@ -35,6 +36,9 @@
         <h2>Vérifier mon abonnement</h2>
         <input type="text" id="search-input" placeholder="Entrez votre nom..." oninput="checkStatus()">
         <div id="result-area" style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;"></div>
+        
+        <!-- الزر الجديد للدخول للإدارة -->
+        <button class="btn-footer" onclick="askForPass()">Espace Administration 🔐</button>
     </div>
 
     <!-- واجهة الإدارة -->
@@ -44,11 +48,14 @@
             <input type="text" id="m-name" placeholder="Nom du client">
             <input type="number" id="m-price" placeholder="Prix (DH)">
             <input type="month" id="m-date" value="2026-05">
-            <button class="btn-admin" onclick="saveToCloud()">Enregistrer dans le Cloud ✅</button>
+            <button class="btn-admin" onclick="saveToCloud()">Enregistrer ✅</button>
         </div>
 
         <div class="box">
-            <h2>📋 Liste Management</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📋 Liste Management</h2>
+                <button onclick="logout()" style="width: auto; padding: 5px 15px; background: #eee;">Quitter</button>
+            </div>
             <div style="overflow-x:auto;">
                 <table>
                     <thead><tr><th>Nom</th><th>Prix</th><th>Date</th><th>Action</th></tr></thead>
@@ -60,6 +67,7 @@
 </div>
 
 <script>
+    // إعدادات Firebase SMAZILAL
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
@@ -74,17 +82,20 @@
     const db = firebase.database();
     let dataCache = {};
 
-    // الدخول للإدارة: اضغط على العنوان 5 مرات
-    let clicks = 0;
-    function accessAdmin() {
-        clicks++;
-        if(clicks === 5) {
-            if(prompt("Mot de passe:") === "1234") {
-                document.getElementById('admin-panel').style.display = 'block';
-                document.getElementById('client-view').style.display = 'none';
-            }
-            clicks = 0;
+    // وظيفة زر الدخول
+    function askForPass() {
+        const pass = prompt("Mot de passe Admin:");
+        if (pass === "1234") {
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('client-view').style.display = 'none';
+        } else {
+            alert("Accès refusé!");
         }
+    }
+
+    function logout() {
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('client-view').style.display = 'block';
     }
 
     function saveToCloud() {
@@ -107,19 +118,17 @@
                 <td>${dataCache[id].name}</td>
                 <td>${dataCache[id].price} DH</td>
                 <td>${dataCache[id].date || '---'}</td>
-                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">X</button></td>
+                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">Supprimer</button></td>
             </tr>`;
         }
     });
 
     function deleteMember(id) { if(confirm("Supprimer?")) db.ref('members/' + id).remove(); }
 
-    // دالة البحث للزبون (تصلح مشكلة undefined)
     function checkStatus() {
         const val = document.getElementById('search-input').value.toLowerCase();
         const res = document.getElementById('result-area');
         if(!val) { res.innerHTML = ""; return; }
-        
         let found = false;
         for(let id in dataCache) {
             if(dataCache[id].name.toLowerCase().includes(val)) {
