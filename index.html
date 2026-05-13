@@ -1,73 +1,65 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart WiFi Azilal</title>
-    <!-- مكتبات Firebase -->
+    <title>SMART WIFI AZILAL</title>
+    <!-- مكتبات Firebase الأساسية -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #FFD400; --dark: #111; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #333; }
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 30px; border-bottom: 4px solid var(--primary); }
-        .container { max-width: 1000px; margin: auto; padding: 20px; }
-        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        #admin-panel { display: none; }
-        input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; }
-        button { cursor: pointer; border: none; border-radius: 12px; font-weight: bold; padding: 15px; width: 100%; transition: 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: var(--bg); color: #333; padding-bottom: 50px; }
+        header { background: var(--dark); color: var(--primary); text-align: center; padding: 20px; border-bottom: 4px solid var(--primary); }
+        .container { max-width: 1000px; margin: auto; padding: 15px; }
+        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1.5px solid #eee; border-radius: 8px; }
+        button { cursor: pointer; border: none; border-radius: 10px; font-weight: bold; padding: 12px; transition: 0.3s; width: 100%; }
         .btn-admin { background: var(--dark); color: var(--primary); }
-        .btn-footer { background: none; color: #999; font-size: 0.8rem; margin-top: 50px; text-decoration: underline; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; }
+        .stat-card { text-align: center; padding: 15px; background: #fff; border-radius: 10px; flex: 1; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>SMART WIFI AZILAL</h1>
-    <p>Service Internet Haute Vitesse</p>
 </header>
 
 <div class="container">
-    <!-- واجهة الزبون -->
-    <div id="client-view" class="box" style="text-align: center;">
-        <h2>Vérifier mon abonnement</h2>
-        <input type="text" id="search-input" placeholder="Entrez votre nom..." oninput="checkStatus()">
-        <div id="result-area" style="margin-top: 20px; font-size: 1.2rem; font-weight: bold;"></div>
-        
-        <!-- الزر الجديد للدخول للإدارة -->
-        <button class="btn-footer" onclick="askForPass()">Espace Administration 🔐</button>
+    <!-- إحصائيات -->
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div class="stat-card"><h3>المشتركين</h3><p id="count">0</p></div>
+        <div class="stat-card"><h3>المداخيل</h3><p id="income">0 DH</p></div>
     </div>
 
-    <!-- واجهة الإدارة -->
-    <div id="admin-panel">
-        <div class="box">
-            <h2>➕ Nouvel Abonné</h2>
-            <input type="text" id="m-name" placeholder="Nom du client">
-            <input type="number" id="m-price" placeholder="Prix (DH)">
-            <input type="month" id="m-date" value="2026-05">
-            <button class="btn-admin" onclick="saveToCloud()">Enregistrer ✅</button>
-        </div>
+    <!-- إضافة مشترك -->
+    <div class="box">
+        <h2>👤 إضافة مشترك جديد</h2>
+        <input type="text" id="m-name" placeholder="الاسم الكامل">
+        <input type="number" id="m-price" placeholder="المبلغ">
+        <input type="month" id="m-date" value="2026-05">
+        <button class="btn-admin" onclick="addMember()">حفظ في السحابة ✅</button>
+    </div>
 
-        <div class="box">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>📋 Liste Management</h2>
-                <button onclick="logout()" style="width: auto; padding: 5px 15px; background: #eee;">Quitter</button>
-            </div>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Nom</th><th>Prix</th><th>Date</th><th>Action</th></tr></thead>
-                    <tbody id="admin-table"></tbody>
-                </table>
-            </div>
+    <!-- لائحة المشتركين -->
+    <div class="box">
+        <h2>📋 لائحة الإدارة</h2>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr><th>الاسم</th><th>المبلغ</th><th>التاريخ</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="m-table"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
 <script>
-    // إعدادات Firebase SMAZILAL
+    // إعدادات Firebase الخاصة بك
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
@@ -80,63 +72,49 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let dataCache = {};
 
-    // وظيفة زر الدخول
-    function askForPass() {
-        const pass = prompt("Mot de passe Admin:");
-        if (pass === "1234") {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('client-view').style.display = 'none';
-        } else {
-            alert("Accès refusé!");
-        }
-    }
-
-    function logout() {
-        document.getElementById('admin-panel').style.display = 'none';
-        document.getElementById('client-view').style.display = 'block';
-    }
-
-    function saveToCloud() {
+    // إضافة مشترك
+    function addMember() {
         const name = document.getElementById('m-name').value;
         const price = document.getElementById('m-price').value;
         const date = document.getElementById('m-date').value;
-        if(!name || !price) return alert("Champs vides!");
-        
+
+        if (!name || !price) return alert("المرجو ملء البيانات");
+
         const id = Date.now();
-        db.ref('members/' + id).set({ name, price, date });
-        document.getElementById('m-name').value = "";
+        db.ref('members/' + id).set({
+            name: name,
+            price: price,
+            date: date
+        }).then(() => {
+            document.getElementById('m-name').value = "";
+            document.getElementById('m-price').value = "";
+        });
     }
 
-    db.ref('members/').on('value', (snap) => {
-        dataCache = snap.val() || {};
-        const tbody = document.getElementById('admin-table');
+    // عرض البيانات وتحديث الإحصائيات
+    db.ref('members/').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const tbody = document.getElementById('m-table');
         tbody.innerHTML = "";
-        for(let id in dataCache) {
+        let total = 0, count = 0;
+
+        for (let id in data) {
+            count++;
+            total += parseInt(data[id].price || 0);
             tbody.innerHTML += `<tr>
-                <td>${dataCache[id].name}</td>
-                <td>${dataCache[id].price} DH</td>
-                <td>${dataCache[id].date || '---'}</td>
-                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">Supprimer</button></td>
+                <td>${data[id].name}</td>
+                <td>${data[id].price} DH</td>
+                <td>${data[id].date || '---'}</td>
+                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">حذف</button></td>
             </tr>`;
         }
+        document.getElementById('count').innerText = count;
+        document.getElementById('income').innerText = total + " DH";
     });
 
-    function deleteMember(id) { if(confirm("Supprimer?")) db.ref('members/' + id).remove(); }
-
-    function checkStatus() {
-        const val = document.getElementById('search-input').value.toLowerCase();
-        const res = document.getElementById('result-area');
-        if(!val) { res.innerHTML = ""; return; }
-        let found = false;
-        for(let id in dataCache) {
-            if(dataCache[id].name.toLowerCase().includes(val)) {
-                res.innerHTML = `<span style="color:var(--success)">✅ Expire le: ${dataCache[id].date || 'Non défini'}</span>`;
-                found = true; break;
-            }
-        }
-        if(!found) res.innerHTML = `<span style="color:var(--danger)">❌ Non trouvé</span>`;
+    function deleteMember(id) {
+        if (confirm("هل تريد الحذف؟")) db.ref('members/' + id).remove();
     }
 </script>
 </body>
