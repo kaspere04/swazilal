@@ -107,13 +107,15 @@
 
 <script>
     // الإعدادات (تعمل محلياً إذا كانت فارغة)
-    const firebaseConfig = { apiKey: "", databaseURL: "" }; 
-
-    let useFirebase = false;
-    if (firebaseConfig.apiKey !== "") {
-        firebase.initializeApp(firebaseConfig);
-        useFirebase = true;
-    }
+   const firebaseConfig = {
+    apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
+    databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
+    authDomain: "smazilal-79a8a.firebaseapp.com",
+    projectId: "smazilal-79a8a",
+    storageBucket: "smazilal-79a8a.appspot.com",
+    messagingSenderId: "791971660492",
+    appId: "1:791971660492:web:7edf10b35580469c643869"
+};
 
     let localDB = JSON.parse(localStorage.getItem('azilal_wifi_v6')) || { members: {}, payments: {} };
 
