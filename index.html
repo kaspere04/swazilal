@@ -7,30 +7,36 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --primary: #FFD400; --dark: #111; --bg: #f4f7f6; --success: #27ae60; --danger: #e74c3c; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #333; line-height: 1.6; }
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 25px; border-bottom: 4px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .container { max-width: 1000px; margin: auto; padding: 20px; }
-        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        :root { --primary: #FFD400; --dark: #1a1a1a; --success: #2ecc71; --danger: #e74c3c; --gray: #f8f9fa; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #eff3f6; color: #2d3436; }
         
-        /* واجهة الإدارة */
+        header { background: var(--dark); color: var(--primary); padding: 30px; text-align: center; border-bottom: 5px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+
+        /* واجهة الزبون */
+        .search-card { background: white; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-top: 20px; }
+        .search-input { width: 80%; max-width: 400px; padding: 15px; border: 2px solid #dfe6e9; border-radius: 50px; font-size: 1.1rem; text-align: center; transition: 0.3s; }
+        .search-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(255,212,0,0.2); }
+        
+        .status-box { margin-top: 25px; padding: 20px; border-radius: 15px; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* لوحة التحكم الجمالية */
         #admin-panel { display: none; }
-        .month-grid { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-        .month-btn { padding: 5px 8px; border-radius: 5px; font-size: 0.7rem; cursor: pointer; border: 1px solid #ddd; background: #f9f9f9; transition: 0.2s; }
-        .paid { background: var(--success) !important; color: white; border-color: var(--success); }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .member-card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 20px; align-items: center; border-right: 6px solid var(--primary); }
         
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1.5px solid #eee; border-radius: 10px; outline: none; }
-        button { cursor: pointer; border: none; border-radius: 10px; font-weight: bold; padding: 15px; transition: 0.3s; }
-        .btn-main { background: var(--dark); color: var(--primary); width: 100%; }
-        .btn-admin-access { background: none; color: #999; font-size: 0.85rem; margin-top: 50px; text-decoration: underline; width: 100%; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; font-size: 0.9rem; }
-        th, td { padding: 12px 8px; border: 1px solid #eee; text-align: center; }
-        th { background: #f8f9fa; color: #666; }
-        
-        .client-search-box { text-align: center; padding: 40px 20px; }
-        .status-badge { padding: 10px 20px; border-radius: 30px; display: inline-block; margin-top: 15px; font-weight: bold; }
+        .months-wrapper { display: flex; flex-wrap: wrap; gap: 6px; }
+        .month-chip { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; background: var(--gray); cursor: pointer; border: 1px solid #ddd; transition: 0.2s; }
+        .month-chip.paid { background: var(--success); color: white; border-color: var(--success); box-shadow: 0 2px 5px rgba(46,204,113,0.3); }
+
+        .btn { padding: 12px 25px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-add { background: var(--dark); color: var(--primary); }
+        .btn-delete { background: none; color: var(--danger); font-size: 1.2rem; }
+        .btn-admin-link { background: none; color: #b2bec3; text-decoration: underline; margin-top: 40px; }
+
+        input[type="number"], input[type="text"] { padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -41,42 +47,30 @@
 
 <div class="container">
     <!-- واجهة الزبون -->
-    <div id="client-view" class="box client-search-box">
-        <h2>🔍 تتبع حالة الاشتراك</h2>
-        <p style="color: #777; margin-bottom: 20px;">أدخل اسمك الكامل للتأكد من وضعية حسابك</p>
-        <input type="text" id="client-search" placeholder="مثال: EL HASSAN..." oninput="checkStatus()">
-        <div id="client-result"></div>
-        <button class="btn-admin-access" onclick="enterAdmin()">لوحة التحكم (خاص بالمدير) 🔐</button>
+    <div id="client-view" class="search-card">
+        <h2 style="margin-bottom: 10px;">🔍 تتبع حالة الاشتراك</h2>
+        <p style="color: #636e72; margin-bottom: 25px;">أدخل اسمك الكريم للتأكد من وضعية الحساب</p>
+        <input type="text" id="c-search" class="search-input" placeholder="اكتب اسمك هنا..." oninput="smartSearch()">
+        <div id="status-display" class="status-box"></div>
+        <button class="btn-admin-link" onclick="toAdmin()">دخول الإدارة 🔐</button>
     </div>
 
     <!-- واجهة الإدارة -->
     <div id="admin-panel">
-        <div class="box">
-            <h2 style="margin-bottom:15px;">👤 إضافة زبون جديد</h2>
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                <input type="text" id="m-name" placeholder="الاسم الكامل">
-                <input type="number" id="m-price" placeholder="المبلغ">
-            </div>
-            <button class="btn-main" onclick="addMember()">حفظ في السحابة ✅</button>
+        <div class="admin-header">
+            <h2>📊 لوحة التحكم في الاشتراكات</h2>
+            <button class="btn" style="background:#dfe6e9;" onclick="toClient()">خروج</button>
         </div>
 
-        <div class="box">
-            <h2 style="margin-bottom:15px;">📊 إدارة تتبع الشهور (2026)</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>الزبون</th>
-                            <th>المبلغ</th>
-                            <th>الأشهر المؤداة (اضغط للتفعيل)</th>
-                            <th>حذف</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-table"></tbody>
-                </table>
+        <div class="search-card" style="margin-bottom: 30px; padding: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="new-name" placeholder="اسم المشترك الجديد" style="flex: 2;">
+                <input type="number" id="new-price" placeholder="الثمن (DH)" style="flex: 1;">
+                <button class="btn btn-add" onclick="saveNew()">إضافة +</button>
             </div>
-            <button onclick="exitAdmin()" style="margin-top:20px; background:#eee; width:100%;">خروج</button>
         </div>
+
+        <div id="members-list"></div>
     </div>
 </div>
 
@@ -84,87 +78,72 @@
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
-        authDomain: "smazilal-79a8a.firebaseapp.com",
         projectId: "smazilal-79a8a",
-        storageBucket: "smazilal-79a8a.appspot.com",
-        messagingSenderId: "791971660492",
-        appId: "1:791971660492:web:7edf10b35580469c643869"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let cache = {};
+    let dataCache = {};
     const months = ["يناير", "فبراير", "مارس", "أبريل", "ماي", "يونيو", "يوليوز", "غشت", "شتنبر", "أكتوبر", "نونبر", "دجنبر"];
 
-    function enterAdmin() {
-        if(prompt("كلمة السر:") === "1234") {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('client-view').style.display = 'none';
-        }
-    }
-    function exitAdmin() {
-        document.getElementById('admin-panel').style.display = 'none';
-        document.getElementById('client-view').style.display = 'block';
+    function toAdmin() { if(prompt("كلمة السر:") === "1234") { document.getElementById('admin-panel').style.display='block'; document.getElementById('client-view').style.display='none'; } }
+    function toClient() { document.getElementById('admin-panel').style.display='none'; document.getElementById('client-view').style.display='block'; }
+
+    function saveNew() {
+        const n = document.getElementById('new-name').value;
+        const p = document.getElementById('new-price').value;
+        if(n && p) { db.ref('members/' + Date.now()).set({ name: n, price: p, payments: {} }); document.getElementById('new-name').value=''; }
     }
 
-    function addMember() {
-        const name = document.getElementById('m-name').value;
-        const price = document.getElementById('m-price').value;
-        if(!name || !price) return;
-        const id = Date.now();
-        db.ref('members/' + id).set({ name, price, payments: {} });
-        document.getElementById('m-name').value = "";
-    }
-
-    db.ref('members/').on('value', (snap) => {
-        cache = snap.val() || {};
-        const tbody = document.getElementById('admin-table');
-        tbody.innerHTML = "";
-        for(let id in cache) {
-            let monthButtons = '<div class="month-grid">';
-            months.forEach((m, index) => {
-                const mKey = 'm' + (index + 1);
-                const isPaid = cache[id].payments && cache[id].payments[mKey];
-                monthButtons += `<div class="month-btn ${isPaid ? 'paid' : ''}" onclick="togglePay('${id}', '${mKey}')">${m}</div>`;
+    db.ref('members/').on('value', (s) => {
+        dataCache = s.val() || {};
+        const list = document.getElementById('members-list');
+        list.innerHTML = "";
+        for(let id in dataCache) {
+            let mBtns = "";
+            months.forEach((m, i) => {
+                const paid = dataCache[id].payments && dataCache[id].payments['m'+(i+1)];
+                mBtns += `<span class="month-chip ${paid?'paid':''}" onclick="toggleP('${id}','m${i+1}')">${m}</span>`;
             });
-            monthButtons += '</div>';
-
-            tbody.innerHTML += `<tr>
-                <td><strong>${cache[id].name}</strong></td>
-                <td>${cache[id].price} DH</td>
-                <td>${monthButtons}</td>
-                <td><button onclick="del('${id}')" style="color:red; background:none;">حذف</button></td>
-            </tr>`;
+            list.innerHTML += `<div class="member-card">
+                <div><strong>${dataCache[id].name}</strong><br><small>${dataCache[id].price} DH</small></div>
+                <div class="months-wrapper">${mBtns}</div>
+                <button class="btn-delete" onclick="del('${id}')">🗑️</button>
+            </div>`;
         }
     });
 
-    function togglePay(id, mKey) {
-        const currentStatus = (cache[id].payments && cache[id].payments[mKey]) || false;
-        db.ref('members/' + id + '/payments/' + mKey).set(!currentStatus);
-    }
+    function toggleP(id, m) { const curr = (dataCache[id].payments && dataCache[id].payments[m]) || false; db.ref('members/'+id+'/payments/'+m).set(!curr); }
+    function del(id) { if(confirm("حذف؟")) db.ref('members/'+id).remove(); }
 
-    function del(id) { if(confirm("حذف المشترك نهائياً؟")) db.ref('members/' + id).remove(); }
-
-    function checkStatus() {
-        const q = document.getElementById('client-search').value.trim().toLowerCase();
-        const res = document.getElementById('client-result');
-        if(!q) { res.innerHTML = ""; return; }
+    function smartSearch() {
+        const val = document.getElementById('c-search').value.trim().toLowerCase();
+        const display = document.getElementById('status-display');
         
-        let found = false;
-        const currentMonthKey = 'm' + (new Date().getMonth() + 1);
+        if(val.length < 3) { display.style.display = 'none'; return; }
 
-        for(let id in cache) {
-            if(cache[id].name.toLowerCase().includes(q)) {
-                const isPaid = cache[id].payments && cache[id].payments[currentMonthKey];
-                res.innerHTML = `
-                    <div class="status-badge" style="background:${isPaid ? '#e8f5e9' : '#ffebee'}; color:${isPaid ? 'green' : 'red'}; border: 2px solid ${isPaid ? 'green' : 'red'};">
-                        ${isPaid ? '✅ اشتراكك مفعل لشهر ' + months[new Date().getMonth()] : '❌ يرجى تسوية وضعية شهر ' + months[new Date().getMonth()]}
-                    </div>
-                `;
-                found = true; break;
-            }
+        let found = null;
+        for(let id in dataCache) { if(dataCache[id].name.toLowerCase().includes(val)) { found = dataCache[id]; break; } }
+
+        if(found) {
+            display.style.display = 'block';
+            const curM = new Date().getMonth() + 1;
+            const isPaid = found.payments && found.payments['m'+curM];
+            
+            // حساب المتأخرات
+            let unpaid = [];
+            for(let i=1; i<curM; i++) { if(!found.payments || !found.payments['m'+i]) unpaid.push(months[i-1]); }
+
+            display.style.background = isPaid ? '#e8f5e9' : '#ffebee';
+            display.style.color = isPaid ? '#2ecc71' : '#e74c3c';
+            display.innerHTML = `<h3>${isPaid ? '✅ اشتراكك مفعل' : '❌ يرجى تسوية الوضعية'}</h3>
+                                 <p style="margin-top:10px">شهر ${months[curM-1]}: ${isPaid?'مؤدى':'غير مؤدى'}</p>
+                                 ${unpaid.length > 0 ? `<p style="font-size:0.8rem; color:#636e72; margin-top:10px">تنبيه: لديك شهور سابقة غير مؤداة (${unpaid.join(', ')})</p>` : ''}`;
+        } else {
+            display.style.display = 'block';
+            display.style.background = '#f1f2f6';
+            display.style.color = '#747d8c';
+            display.innerHTML = "🔍 لم يتم العثور على اسم مطابق";
         }
-        if(!found) res.innerHTML = "<p style='margin-top:15px; color:#999;'>الاسم غير مسجل في النظام</p>";
     }
 </script>
 </body>
