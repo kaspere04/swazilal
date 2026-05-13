@@ -3,63 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART WIFI AZILAL</title>
-    <!-- مكتبات Firebase الأساسية -->
+    <title>SMART WIFI AZILAL - FULL CONTROL</title>
+
+    <!-- مكتبات Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
-        :root { --primary: #FFD400; --dark: #111; --success: #27ae60; --danger: #e74c3c; --bg: #f4f7f6; }
+        :root {
+            --primary: #FFD400;
+            --dark: #111;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: var(--bg); color: #333; padding-bottom: 50px; }
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 20px; border-bottom: 4px solid var(--primary); }
-        .container { max-width: 1000px; margin: auto; padding: 15px; }
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1.5px solid #eee; border-radius: 8px; }
-        button { cursor: pointer; border: none; border-radius: 10px; font-weight: bold; padding: 12px; transition: 0.3s; width: 100%; }
-        .btn-admin { background: var(--dark); color: var(--primary); }
+        
+        header {
+            background: var(--dark);
+            color: var(--primary);
+            text-align: center;
+            padding: 20px;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .container { max-width: 1100px; margin: auto; padding: 15px; }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 { margin-bottom: 15px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            padding: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-main { background: var(--dark); color: var(--primary); width: 100%; }
+        .btn-success { background: var(--success); color: white; width: 100%; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; }
-        .stat-card { text-align: center; padding: 15px; background: #fff; border-radius: 10px; flex: 1; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background: #f9f9f9; color: #666; }
+
+        .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; }
+        .stat-item { background: white; padding: 15px; border-radius: 12px; flex: 1; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .stat-item h3 { font-size: 0.9rem; color: #888; }
+        .stat-item p { font-size: 1.3rem; font-weight: bold; }
+
+        .tag { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .tag-active { background: #e8f5e9; color: var(--success); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>SMART WIFI AZILAL</h1>
+    <h1>SMART WIFI AZILAL 🚀</h1>
+    <p>Service Internet Haute Vitesse</p>
 </header>
 
 <div class="container">
-    <!-- إحصائيات -->
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <div class="stat-card"><h3>المشتركين</h3><p id="count">0</p></div>
-        <div class="stat-card"><h3>المداخيل</h3><p id="income">0 DH</p></div>
+    
+    <!-- الإحصائيات -->
+    <div class="stats-bar">
+        <div class="stat-item"><h3>إجمالي المشتركين</h3><p id="total-m">0</p></div>
+        <div class="stat-item"><h3>مداخيل الشهر</h3><p id="total-p">0 DH</p></div>
     </div>
 
-    <!-- إضافة مشترك -->
-    <div class="box">
+    <!-- 1. إضافة مشترك -->
+    <div class="box" style="border-right: 5px solid var(--primary);">
         <h2>👤 إضافة مشترك جديد</h2>
-        <input type="text" id="m-name" placeholder="الاسم الكامل">
-        <input type="number" id="m-price" placeholder="المبلغ">
-        <input type="month" id="m-date" value="2026-05">
-        <button class="btn-admin" onclick="addMember()">حفظ في السحابة ✅</button>
+        <div class="grid-inputs">
+            <input type="text" id="m-name" placeholder="الاسم الكامل">
+            <input type="number" id="m-price" placeholder="المبلغ">
+            <input type="month" id="m-start-date" value="2026-05">
+        </div>
+        <button class="btn-main" onclick="addMember()">حفظ المشترك ✅</button>
     </div>
 
-    <!-- لائحة المشتركين -->
+    <!-- 2. تسجيل أداء شهر (الذي طلبته سابقاً) -->
+    <div class="box" style="border-right: 5px solid var(--success);">
+        <h2>💰 تسجيل أداء شهر</h2>
+        <div class="grid-inputs">
+            <select id="p-member-select"><option value="">اختر المشترك...</option></select>
+            <div style="display: flex; gap: 5px;">
+                <select id="p-month">
+                    <option value="1">يناير (1)</option><option value="2">فبراير (2)</option>
+                    <option value="3">مارس (3)</option><option value="4">أبريل (4)</option>
+                    <option value="5" selected>ماي (5)</option><option value="6">يونيو (6)</option>
+                    <option value="7">يوليوز (7)</option><option value="8">غشت (8)</option>
+                    <option value="9">شتنبر (9)</option><option value="10">أكتوبر (10)</option>
+                    <option value="11">نونبر (11)</option><option value="12">دجنبر (12)</option>
+                </select>
+                <input type="number" id="p-year" value="2026" style="width: 100px;">
+            </div>
+        </div>
+        <button class="btn-success" onclick="recordPayment()">تسجيل الأداء 💵</button>
+    </div>
+
+    <!-- 3. جدول البيانات الكامل -->
     <div class="box">
-        <h2>📋 لائحة الإدارة</h2>
-        <div style="overflow-x:auto;">
+        <h2>📋 إدارة المشتركين</h2>
+        <div style="overflow-x: auto;">
             <table>
                 <thead>
-                    <tr><th>الاسم</th><th>المبلغ</th><th>التاريخ</th><th>إجراء</th></tr>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>المبلغ</th>
+                        <th>البداية</th>
+                        <th>الحالة</th>
+                        <th>حذف</th>
+                    </tr>
                 </thead>
-                <tbody id="m-table"></tbody>
+                <tbody id="main-table-body"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // إعدادات Firebase الخاصة بك
+    // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
@@ -77,45 +167,60 @@
     function addMember() {
         const name = document.getElementById('m-name').value;
         const price = document.getElementById('m-price').value;
-        const date = document.getElementById('m-date').value;
-
-        if (!name || !price) return alert("المرجو ملء البيانات");
+        const date = document.getElementById('m-start-date').value;
+        if(!name || !price) return alert("المرجو إدخال البيانات");
 
         const id = Date.now();
-        db.ref('members/' + id).set({
-            name: name,
-            price: price,
-            date: date
-        }).then(() => {
-            document.getElementById('m-name').value = "";
-            document.getElementById('m-price').value = "";
-        });
+        db.ref('members/' + id).set({ name, price, startDate: date, payments: {} });
+        document.getElementById('m-name').value = "";
     }
 
-    // عرض البيانات وتحديث الإحصائيات
-    db.ref('members/').on('value', (snapshot) => {
-        const data = snapshot.val();
-        const tbody = document.getElementById('m-table');
-        tbody.innerHTML = "";
-        let total = 0, count = 0;
+    // تسجيل أداء
+    function recordPayment() {
+        const mId = document.getElementById('p-member-select').value;
+        const month = document.getElementById('p-month').value;
+        const year = document.getElementById('p-year').value;
+        if(!mId) return alert("اختر مشتركاً!");
 
-        for (let id in data) {
-            count++;
-            total += parseInt(data[id].price || 0);
+        db.ref('members/' + mId + '/payments/' + year + '_' + month).set(true)
+        .then(() => alert("تم تسجيل الأداء بنجاح"));
+    }
+
+    // التحديث التلقائي للواجهة
+    db.ref('members/').on('value', (snap) => {
+        const data = snap.val() || {};
+        const tbody = document.getElementById('main-table-body');
+        const select = document.getElementById('p-member-select');
+        
+        tbody.innerHTML = "";
+        select.innerHTML = '<option value="">اختر المشترك...</option>';
+        
+        let totalCount = 0;
+        let totalPrice = 0;
+
+        for(let id in data) {
+            totalCount++;
+            totalPrice += parseInt(data[id].price || 0);
+
+            // إضافة للجدول
             tbody.innerHTML += `<tr>
-                <td>${data[id].name}</td>
+                <td><strong>${data[id].name}</strong></td>
                 <td>${data[id].price} DH</td>
-                <td>${data[id].date || '---'}</td>
-                <td><button onclick="deleteMember('${id}')" style="color:red; background:none; width:auto;">حذف</button></td>
+                <td>${data[id].startDate || '---'}</td>
+                <td><span class="tag tag-active">نشط</span></td>
+                <td><button onclick="deleteM('${id}')" style="color:red; background:none;">حذف</button></td>
             </tr>`;
+
+            // إضافة للقائمة المنسدلة
+            select.innerHTML += `<option value="${id}">${data[id].name}</option>`;
         }
-        document.getElementById('count').innerText = count;
-        document.getElementById('income').innerText = total + " DH";
+
+        document.getElementById('total-m').innerText = totalCount;
+        document.getElementById('total-p').innerText = totalPrice + " DH";
     });
 
-    function deleteMember(id) {
-        if (confirm("هل تريد الحذف؟")) db.ref('members/' + id).remove();
-    }
+    function deleteM(id) { if(confirm("حذف؟")) db.ref('members/' + id).remove(); }
+
 </script>
 </body>
 </html>
