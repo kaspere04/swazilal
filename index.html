@@ -3,153 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART WIFI AZILAL - FULL CONTROL</title>
-
-    <!-- مكتبات Firebase -->
+    <title>SMART WIFI AZILAL</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
     <style>
-        :root {
-            --primary: #FFD400;
-            --dark: #111;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --bg: #f4f7f6;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: var(--bg); color: #333; padding-bottom: 50px; }
-        
-        header {
-            background: var(--dark);
-            color: var(--primary);
-            text-align: center;
-            padding: 20px;
-            border-bottom: 4px solid var(--primary);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .container { max-width: 1100px; margin: auto; padding: 15px; }
-
-        .box {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
-        h2 { margin-bottom: 15px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-
-        .grid-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1.5px solid #eee;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            padding: 12px;
-            transition: 0.3s;
-        }
-
+        :root { --primary: #FFD400; --dark: #111; --bg: #f4f7f6; --success: #27ae60; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: #333; }
+        header { background: var(--dark); color: var(--primary); text-align: center; padding: 25px; border-bottom: 4px solid var(--primary); }
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
+        #admin-panel { display: none; text-align: right; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1.5px solid #eee; border-radius: 10px; font-size: 1rem; }
+        button { cursor: pointer; border: none; border-radius: 10px; font-weight: bold; padding: 15px; transition: 0.3s; }
         .btn-main { background: var(--dark); color: var(--primary); width: 100%; }
-        .btn-success { background: var(--success); color: white; width: 100%; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; }
-        th { background: #f9f9f9; color: #666; }
-
-        .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-item { background: white; padding: 15px; border-radius: 12px; flex: 1; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .stat-item h3 { font-size: 0.9rem; color: #888; }
-        .stat-item p { font-size: 1.3rem; font-weight: bold; }
-
-        .tag { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        .tag-active { background: #e8f5e9; color: var(--success); }
+        .btn-admin-access { background: none; color: #999; font-size: 0.8rem; margin-top: 40px; text-decoration: underline; border: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
+        th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>SMART WIFI AZILAL 🚀</h1>
-    <p>Service Internet Haute Vitesse</p>
 </header>
 
 <div class="container">
-    
-    <!-- الإحصائيات -->
-    <div class="stats-bar">
-        <div class="stat-item"><h3>إجمالي المشتركين</h3><p id="total-m">0</p></div>
-        <div class="stat-item"><h3>مداخيل الشهر</h3><p id="total-p">0 DH</p></div>
+    <!-- 1. واجهة المشترك (تظهر أولاً) -->
+    <div id="client-view" class="box">
+        <h2>تحقق من حالة اشتراكك</h2>
+        <input type="text" id="client-search" placeholder="اكتب اسمك هنا..." oninput="checkMyStatus()">
+        <div id="client-result" style="margin-top: 20px; font-weight: bold; font-size: 1.2rem;"></div>
+        
+        <!-- زر الدخول للإدارة في الأسفل -->
+        <button class="btn-admin-access" onclick="openAdmin()">دخول الإدارة 🔐</button>
     </div>
 
-    <!-- 1. إضافة مشترك -->
-    <div class="box" style="border-right: 5px solid var(--primary);">
-        <h2>👤 إضافة مشترك جديد</h2>
-        <div class="grid-inputs">
-            <input type="text" id="m-name" placeholder="الاسم الكامل">
-            <input type="number" id="m-price" placeholder="المبلغ">
-            <input type="month" id="m-start-date" value="2026-05">
+    <!-- 2. واجهة الإدارة (مخفية) -->
+    <div id="admin-panel">
+        <div class="box">
+            <h2>➕ إضافة مشترك جديد</h2>
+            <input type="text" id="m-name" placeholder="اسم المشترك">
+            <input type="number" id="m-price" placeholder="المبلغ الشهري">
+            <button class="btn-main" onclick="addNewMember()">حفظ المشترك في السحابة</button>
         </div>
-        <button class="btn-main" onclick="addMember()">حفظ المشترك ✅</button>
-    </div>
 
-    <!-- 2. تسجيل أداء شهر (الذي طلبته سابقاً) -->
-    <div class="box" style="border-right: 5px solid var(--success);">
-        <h2>💰 تسجيل أداء شهر</h2>
-        <div class="grid-inputs">
-            <select id="p-member-select"><option value="">اختر المشترك...</option></select>
-            <div style="display: flex; gap: 5px;">
-                <select id="p-month">
-                    <option value="1">يناير (1)</option><option value="2">فبراير (2)</option>
-                    <option value="3">مارس (3)</option><option value="4">أبريل (4)</option>
-                    <option value="5" selected>ماي (5)</option><option value="6">يونيو (6)</option>
-                    <option value="7">يوليوز (7)</option><option value="8">غشت (8)</option>
-                    <option value="9">شتنبر (9)</option><option value="10">أكتوبر (10)</option>
-                    <option value="11">نونبر (11)</option><option value="12">دجنبر (12)</option>
-                </select>
-                <input type="number" id="p-year" value="2026" style="width: 100px;">
+        <div class="box">
+            <h2>💰 التحكم في الشهور والاشتراكات</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>المبلغ</th>
+                            <th>شهر 5 (ماي)</th>
+                            <th>شهر 6 (يونيو)</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body"></tbody>
+                </table>
             </div>
-        </div>
-        <button class="btn-success" onclick="recordPayment()">تسجيل الأداء 💵</button>
-    </div>
-
-    <!-- 3. جدول البيانات الكامل -->
-    <div class="box">
-        <h2>📋 إدارة المشتركين</h2>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>الاسم</th>
-                        <th>المبلغ</th>
-                        <th>البداية</th>
-                        <th>الحالة</th>
-                        <th>حذف</th>
-                    </tr>
-                </thead>
-                <tbody id="main-table-body"></tbody>
-            </table>
+            <button onclick="closeAdmin()" style="margin-top:20px; background:#eee;">خروج من الإدارة</button>
         </div>
     </div>
 </div>
 
 <script>
-    // إعدادات Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
         databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
@@ -162,65 +83,69 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    let membersData = {};
+
+    // وظائف الواجهة
+    function openAdmin() {
+        if(prompt("كلمة السر:") === "1234") {
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('client-view').style.display = 'none';
+        }
+    }
+    function closeAdmin() {
+        document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('client-view').style.display = 'block';
+    }
 
     // إضافة مشترك
-    function addMember() {
+    function addNewMember() {
         const name = document.getElementById('m-name').value;
         const price = document.getElementById('m-price').value;
-        const date = document.getElementById('m-start-date').value;
-        if(!name || !price) return alert("المرجو إدخال البيانات");
-
+        if(!name || !price) return;
         const id = Date.now();
-        db.ref('members/' + id).set({ name, price, startDate: date, payments: {} });
+        db.ref('members/' + id).set({ name, price, m5: false, m6: false });
         document.getElementById('m-name').value = "";
     }
 
-    // تسجيل أداء
-    function recordPayment() {
-        const mId = document.getElementById('p-member-select').value;
-        const month = document.getElementById('p-month').value;
-        const year = document.getElementById('p-year').value;
-        if(!mId) return alert("اختر مشتركاً!");
-
-        db.ref('members/' + mId + '/payments/' + year + '_' + month).set(true)
-        .then(() => alert("تم تسجيل الأداء بنجاح"));
-    }
-
-    // التحديث التلقائي للواجهة
+    // تحديث البيانات من السحابة
     db.ref('members/').on('value', (snap) => {
-        const data = snap.val() || {};
-        const tbody = document.getElementById('main-table-body');
-        const select = document.getElementById('p-member-select');
-        
+        membersData = snap.val() || {};
+        const tbody = document.getElementById('admin-table-body');
         tbody.innerHTML = "";
-        select.innerHTML = '<option value="">اختر المشترك...</option>';
-        
-        let totalCount = 0;
-        let totalPrice = 0;
-
-        for(let id in data) {
-            totalCount++;
-            totalPrice += parseInt(data[id].price || 0);
-
-            // إضافة للجدول
-            tbody.innerHTML += `<tr>
-                <td><strong>${data[id].name}</strong></td>
-                <td>${data[id].price} DH</td>
-                <td>${data[id].startDate || '---'}</td>
-                <td><span class="tag tag-active">نشط</span></td>
-                <td><button onclick="deleteM('${id}')" style="color:red; background:none;">حذف</button></td>
-            </tr>`;
-
-            // إضافة للقائمة المنسدلة
-            select.innerHTML += `<option value="${id}">${data[id].name}</option>`;
+        for(let id in membersData) {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${membersData[id].name}</td>
+                    <td>${membersData[id].price} DH</td>
+                    <td><input type="checkbox" ${membersData[id].m5 ? 'checked' : ''} onchange="toggleMonth('${id}', 'm5')"></td>
+                    <td><input type="checkbox" ${membersData[id].m6 ? 'checked' : ''} onchange="toggleMonth('${id}', 'm6')"></td>
+                    <td><button onclick="deleteM('${id}')" style="color:red;">حذف</button></td>
+                </tr>`;
         }
-
-        document.getElementById('total-m').innerText = totalCount;
-        document.getElementById('total-p').innerText = totalPrice + " DH";
     });
+
+    function toggleMonth(id, month) {
+        const status = membersData[id][month];
+        db.ref('members/' + id + '/' + month).set(!status);
+    }
 
     function deleteM(id) { if(confirm("حذف؟")) db.ref('members/' + id).remove(); }
 
+    // بحث الزبون
+    function checkMyStatus() {
+        const q = document.getElementById('client-search').value.toLowerCase();
+        const res = document.getElementById('client-result');
+        if(!q) { res.innerHTML = ""; return; }
+        let found = false;
+        for(let id in membersData) {
+            if(membersData[id].name.toLowerCase().includes(q)) {
+                const s = membersData[id].m5 ? "✅ خالص (شهر 5)" : "❌ لم يؤدِ بعد (شهر 5)";
+                res.innerHTML = `<span style="color:${membersData[id].m5 ? 'green' : 'red'}">${s}</span>`;
+                found = true; break;
+            }
+        }
+        if(!found) res.innerHTML = "❌ الاسم غير موجود";
+    }
 </script>
 </body>
 </html>
