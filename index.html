@@ -22,13 +22,14 @@
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
         .log-section { background: #fff5f5; border: 1px solid #ffe3e3; }
         .admin-only { display: none; }
+        .unpaid-list { font-size: 0.85rem; color: #e74c3c; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>SMART WIFI AZILAL</h1>
-    <p style="font-size: 0.8rem; color: #fff;">نظام التحكم الكامل في الدفعات</p>
+    <p style="font-size: 0.8rem; color: #fff;">نظام التحكم الكامل (إصدار 2026-2036)</p>
 </header>
 
 <div class="container">
@@ -44,16 +45,15 @@
     </div>
 
     <div id="admin-panel" class="admin-only">
-        <!-- إضافة مشترك جديد مع تحديد تاريخ البداية -->
+        <!-- إضافة مشترك جديد -->
         <div class="section-box">
             <div class="section-title">👤 إضافة مشترك جديد</div>
             <input type="text" id="new-name" placeholder="الاسم الكامل">
             <input type="number" id="new-price" placeholder="المبلغ الشهري">
             <div style="display: flex; gap: 10px;">
-                <select id="start-year"><option value="2026">2026</option><option value="2025">2025</option></select>
-                <select id="start-month"></select>
+                <select id="start-year" class="year-list"></select>
+                <select id="start-month" class="month-list"></select>
             </div>
-            <p style="font-size: 0.7rem; color: #666;">* حدد متى بدأ هذا المشترك فعلياً ليتم حساب ديونه بدقة.</p>
             <button class="btn-black" onclick="saveMember()" style="margin-top:10px;">حفظ المشترك</button>
         </div>
 
@@ -62,13 +62,13 @@
             <div class="section-title">💰 تسجيل أداء شهر</div>
             <select id="select-member"></select>
             <div style="display: flex; gap: 10px;">
-                <select id="pay-year"><option value="2026">2026</option><option value="2025">2025</option></select>
-                <select id="pay-month"></select>
+                <select id="pay-year" class="year-list"></select>
+                <select id="pay-month" class="month-list"></select>
             </div>
             <button class="btn-green" onclick="payMonth()">تأكيد استلام المبلغ</button>
         </div>
 
-        <!-- وضعية المشتركين -->
+        <!-- وضعية المشتركين والديون -->
         <div class="section-box">
             <div class="section-title">📊 وضعية المشتركين والديون</div>
             <div style="overflow-x:auto;">
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <!-- سجل الدفعات التفصيلي -->
+        <!-- سجل الدفعات -->
         <div class="section-box log-section">
             <div class="section-title" style="color:red;">🧾 سجل الدفعات (تعديل/إلغاء كل شهر)</div>
             <div style="overflow-x:auto;">
@@ -102,15 +102,21 @@
     const db = firebase.database();
     const monthsNames = ["يناير", "فبراير", "مارس", "أبريل", "ماي", "يونيو", "يوليوز", "غشت", "شتنبر", "أكتوبر", "نونبر", "دجنبر"];
     
-    function fillMonths(id) {
-        const el = document.getElementById(id);
-        monthsNames.forEach((m, i) => el.innerHTML += `<option value="${i+1}">${m} (${i+1})</option>`);
+    // تعبئة القوائم (الشهور والسنوات لغاية 2036)
+    function setupLists() {
+        document.querySelectorAll('.month-list').forEach(el => {
+            monthsNames.forEach((m, i) => el.innerHTML += `<option value="${i+1}">${m} (${i+1})</option>`);
+        });
+        document.querySelectorAll('.year-list').forEach(el => {
+            for(let y=2025; y<=2036; y++) el.innerHTML += `<option value="${y}">${y}</option>`;
+        });
     }
-    fillMonths('start-month'); fillMonths('pay-month');
+    setupLists();
 
     let dataCache = {};
-    const currentYear = 2026;
-    const currentMonthNum = new Date().getMonth() + 1;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthNum = now.getMonth() + 1;
 
     function unlock() { if(prompt("كلمة السر:") === "1234") document.getElementById('admin-panel').style.display='block'; }
 
@@ -122,10 +128,7 @@
         if(n && p) {
             db.ref('members/' + Date.now()).set({ 
                 name: n, price: p, startYear: parseInt(sy), startMonth: parseInt(sm), payments: {} 
-            }).then(() => { 
-                alert("تمت الإضافة بنجاح"); 
-                document.getElementById('new-name').value = ""; 
-            });
+            }).then(() => { alert("تمت الإضافة بنجاح"); document.getElementById('new-name').value = ""; });
         }
     }
 
@@ -141,21 +144,21 @@
             let mData = dataCache[id];
             select.innerHTML += `<option value="${id}">${mData.name}</option>`;
             
-            // حساب الأشهر التي يجب دفعها بناءً على تاريخ البداية
-            let monthsToPay = 0;
-            if(mData.startYear == 2026) {
-                monthsToPay = (currentMonthNum - mData.startMonth) + 1;
-            } else if(mData.startYear < 2026) {
-                monthsToPay = (12 - mData.startMonth + 1) + currentMonthNum;
+            // حساب الأشهر المستحقة بدقة
+            let totalNeededMonths = 0;
+            if (mData.startYear < currentYear) {
+                totalNeededMonths = (12 - mData.startMonth + 1) + ((currentYear - mData.startYear - 1) * 12) + currentMonthNum;
+            } else if (mData.startYear === currentYear) {
+                totalNeededMonths = (currentMonthNum - mData.startMonth) + 1;
             }
-            if(monthsToPay < 0) monthsToPay = 0;
+            if(totalNeededMonths < 0) totalNeededMonths = 0;
 
             let pCount = mData.payments ? Object.keys(mData.payments).length : 0;
-            let debt = (monthsToPay - pCount) * parseInt(mData.price);
+            let debt = (totalNeededMonths - pCount) * parseInt(mData.price);
             
             table.innerHTML += `<tr>
                 <td><strong>${mData.name}</strong></td>
-                <td><span style="color:green">${pCount}</span> / ${monthsToPay}</td>
+                <td><span style="color:green">${pCount}</span> / ${totalNeededMonths}</td>
                 <td style="color:${debt>0?'red':'green'}">${debt} DH</td>
                 <td><button onclick="del('${id}')" style="color:red; background:none; width:auto;">حذف</button></td>
             </tr>`;
@@ -179,30 +182,57 @@
         const m = document.getElementById('pay-month').value;
         const y = document.getElementById('pay-year').value;
         const payId = y + '_m' + m;
-        const dateStr = new Date().toLocaleDateString('ar-EG');
-        
         if(id) {
             db.ref('members/' + id + '/payments/' + payId).set({
-                year: y, month: m, date: dateStr
+                year: y, month: m, date: new Date().toLocaleDateString('ar-EG')
             });
         }
     }
-
-    function cancelPay(id, key) { if(confirm("إلغاء هذا الشهر؟")) db.ref('members/'+id+'/payments/'+key).remove(); }
-    function del(id) { if(confirm("حذف الزبون نهائياً؟")) db.ref('members/'+id).remove(); }
 
     function checkStatus() {
         const val = document.getElementById('c-search').value.trim().toLowerCase();
         const res = document.getElementById('status-result');
         let found = null;
         for(let id in dataCache) { if(dataCache[id].name.toLowerCase() === val) { found = dataCache[id]; break; } }
+        
         res.style.display = 'block';
         if(found) {
-            const isPaid = found.payments && found.payments['2026_m' + currentMonthNum];
-            res.style.background = isPaid ? '#e8f5e9' : '#ffebee';
-            res.innerHTML = `<h3>${found.name}</h3><p>${isPaid ? '✅ اشتراكك مفعل حالياً' : '❌ مراجعة الإدارة (بذمتك تأخرات)'}</p>`;
-        } else { res.style.background = '#eee'; res.innerHTML = "🔍 الاسم غير مسجل بدقة"; }
+            const isPaidCurrent = found.payments && found.payments[currentYear + '_m' + currentMonthNum];
+            
+            // استخراج الأشهر غير المؤداة
+            let unpaidMonths = [];
+            // فحص من تاريخ البداية إلى اليوم
+            let checkY = found.startYear;
+            let checkM = found.startMonth;
+            
+            while (checkY < currentYear || (checkY === currentYear && checkM <= currentMonthNum)) {
+                if (!found.payments || !found.payments[checkY + '_m' + checkM]) {
+                    unpaidMonths.push(`${monthsNames[checkM-1]} (${checkY})`);
+                }
+                checkM++;
+                if (checkM > 12) { checkM = 1; checkY++; }
+            }
+
+            res.style.background = isPaidCurrent ? '#e8f5e9' : '#ffebee';
+            res.style.color = isPaidCurrent ? 'green' : 'red';
+            
+            let html = `<h3>${found.name}</h3>`;
+            html += `<p>${isPaidCurrent ? '✅ اشتراكك مفعل لشهر ' + currentMonthNum : '❌ مراجعة الإدارة (بذمتك تأخرات)'}</p>`;
+            
+            if (unpaidMonths.length > 0) {
+                html += `<div class="unpaid-list">⚠️ الأشهر غير المؤداة:<br>${unpaidMonths.join(' - ')}</div>`;
+            } else {
+                html += `<div style="color:green; font-size:0.8rem; margin-top:5px;">✨ أنت ملتزم بجميع الدفعات، شكراً لك!</div>`;
+            }
+            res.innerHTML = html;
+        } else {
+            res.style.background = '#eee'; res.style.color = '#666';
+            res.innerHTML = "🔍 لم يتم العثور على الاسم، يرجى كتابته كاملاً.";
+        }
     }
+
+    function cancelPay(id, key) { if(confirm("إلغاء هذا الشهر؟")) db.ref('members/'+id+'/payments/'+key).remove(); }
+    function del(id) { if(confirm("حذف الزبون نهائياً؟")) db.ref('members/'+id).remove(); }
 </script>
 </body>
 </html>
