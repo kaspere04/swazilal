@@ -1,229 +1,324 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMART WIFI AZILAL</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <style>
-        :root { --primary: #FFD400; --dark: #000; --success: #27ae60; --danger: #e74c3c; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f0f2f5; padding-bottom: 50px; }
-        header { background: var(--dark); color: var(--primary); text-align: center; padding: 20px; border-bottom: 3px solid var(--primary); }
-        .container { max-width: 850px; margin: auto; padding: 15px; }
-        .section-box { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; }
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; padding: 12px; width: 100%; }
-        .btn-black { background: var(--dark); color: var(--primary); }
-        .btn-green { background: var(--success); color: white; }
-        
-        /* تصميم السجل المنظم */
-        .member-row { border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-        .member-head { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .member-info { display: flex; flex-direction: column; gap: 4px; }
-        .member-debt { color: var(--danger); font-size: 0.85rem; font-weight: bold; }
-        .member-content { display: none; background: #fafafa; padding: 10px; border-top: 1px solid #eee; }
-        .member-content.active { display: block; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
-        .admin-only { display: none; }
-        .unpaid-tag { color: var(--danger); font-size: 0.8rem; margin-top: 8px; display: block; font-weight: bold; }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart WiFi Azilal - Pro</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#F5C518;--gd:#c9a010;
+  --bg:#0d0d0d;--s1:#141414;--s2:#1c1c1c;--s3:#252525;--s4:#2e2e2e;
+  --tx:#f0f0f0;--tx2:#999;--tx3:#555;
+  --gr:#22c55e;--rd:#ef4444;--bl:#3b82f6;--or:#f97316;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+button,input,select{font-family:'Cairo',sans-serif}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--g);border-radius:3px}
+
+/* HEADER */
+.header{background:var(--s1);border-bottom:1px solid #1e1e1e;height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-text{font-weight:900;font-size:15px;color:var(--g)}
+.role-switch{display:flex;background:var(--s3);border-radius:9px;padding:3px;gap:3px}
+.role-btn{border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:none;color:var(--tx2)}
+.role-btn.active{background:var(--g);color:#111}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;min-height:calc(100vh - 56px)}
+.sidebar{width:170px;background:var(--s1);border-left:1px solid #1e1e1e;padding:14px 10px;display:flex;flex-direction:column;gap:4px;position:sticky;top:56px;height:calc(100vh - 56px)}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9px;border:1px solid transparent;background:none;color:var(--tx2);font-size:13px;font-weight:400;cursor:pointer;width:100%;text-align:right;transition:all .2s}
+.nav-btn.active{background:#F5C51815;border-color:#F5C51838;color:var(--g);font-weight:700}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid #1e1e1e;font-size:11px;color:var(--tx3);text-align:center}
+.main{flex:1;padding:20px;overflow-y:auto}
+
+/* CARDS & STATS */
+.card{background:var(--s2);border-radius:14px;border:1px solid #252525}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--s2);border-radius:14px;border:1px solid #252525;padding:18px;position:relative;overflow:hidden}
+.stat-icon{position:absolute;top:-8px;left:-8px;font-size:50px;opacity:.07}
+.stat-val{font-weight:900;font-size:22px}
+.stat-label{font-size:11px;color:var(--tx2);margin-top:4px}
+
+/* BUTTONS */
+.btn{border:none;border-radius:9px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:inherit; text-align:center; display:inline-block; text-decoration:none;}
+.btn-gold{background:var(--g);color:#111;padding:10px 20px;font-size:14px}
+.btn-dark{background:var(--s3);color:var(--tx);border:1px solid #333;padding:10px 20px;font-size:14px}
+.btn-red{background:#ef444418;color:var(--rd);border:1px solid #ef444433;padding:10px 20px;font-size:14px}
+.btn-ghost{background:none;color:var(--tx2);border:1px solid #333;padding:10px 20px;font-size:14px}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* INPUTS */
+.inp{background:var(--s3);border:1px solid #333;border-radius:9px;padding:10px 14px;color:var(--tx);font-size:14px;outline:none;width:100%}
+.inp:focus{border-color:var(--g)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal{background:var(--s2);border-radius:14px;border:1px solid #2a2a2a;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border-bottom:1px solid #2a2a2a}
+.modal-body{padding:20px}
+.hidden{display:none}
+
+/* PAY GRID */
+.pay-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pay-cell{border-radius:9px;padding:9px 4px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;background:none;font-family:inherit}
+.pay-paid{background:#22c55e18;border-color:#22c55e44;color:var(--gr)}
+.pay-unpaid{background:#ef444418;border-color:#ef444444;color:var(--rd)}
+.pay-future{background:var(--s4);color:var(--tx3);cursor:default}
+
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.sub-card{background:var(--s2);border-radius:14px;border:1px solid #252525;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sub-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#c9a010);display:flex;align-items:center;justify-content:center;font-weight:900;color:#111}
+
+.hero{background:linear-gradient(135deg,#1a1400,#0d0d0d);border:1px solid #F5C51828;border-radius:14px;padding:24px;margin-bottom:20px}
+@media (max-width: 600px) { .sidebar { display: none !important; } }
+</style>
 </head>
 <body>
 
-<header>
-    <h1>SMART WIFI AZILAL</h1>
-    <p style="font-size:0.8rem; color:#fff; font-family:'Poppins',Arial,sans-serif; font-weight:500; letter-spacing:0.5px;">
-    Secure & Smart Subscription Management</p>
-</header>
+<div class="header">
+  <div class="logo">
+    <svg width="24" height="24" viewBox="0 0 80 80" fill="none">
+      <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+      <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#111"/>
+      <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+    </svg>
+    <span class="logo-text">Smart WiFi Azilal</span>
+  </div>
+  <div class="role-switch">
+    <button id="btn-role-admin" class="role-btn active" onclick="switchRole('admin')">🔑 إدارة</button>
+    <button id="btn-role-client" class="role-btn" onclick="switchRole('client')">👤 عميل</button>
+  </div>
+</div>
 
-<div class="container">
-    <!-- فحص الحالة للزبون -->
-    <div class="section-box">
-        <div class="section-title">🔍 فحص حالة الاشتراك</div>
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="c-search" placeholder="اكتب اسمك الكامل...">
-            <button onclick="checkStatus()" style="width: 100px; background: var(--dark); color: white;">بحث</button>
-        </div>
-        <div id="status-result" style="margin-top:15px; padding:15px; border-radius:8px; display:none; text-align:center;"></div>
-        <center><button onclick="unlock()" style="background:none; color:#ccc; font-size:0.7rem; margin-top:15px; text-decoration:underline; border:none;">دخول الإدارة 🔐</button></center>
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <button class="nav-btn active" id="nav-dash" onclick="showPage('dashboard')">📊 لوحة التحكم</button>
+    <button class="nav-btn" id="nav-subs" onclick="showPage('subscribers')">👥 المشتركون</button>
+    <div class="sidebar-foot" id="sub-count-side">0 مشترك</div>
+  </div>
+
+  <div class="main">
+    <div id="page-dashboard">
+      <div class="hero">
+        <h2 style="color:var(--g)">مرحباً بك في Smart WiFi</h2>
+        <p id="today-date" style="font-size:12px; color:var(--tx2)"></p>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div id="debtors-section"></div>
     </div>
 
-    <div id="admin-panel" class="admin-only">
-        <!-- إضافة مشترك جديد -->
-        <div class="section-box">
-            <div class="section-title">👤 إضافة مشترك جديد</div>
-            <input type="text" id="new-name" placeholder="الاسم الكامل">
-            <input type="number" id="new-price" placeholder="الثمن الشهري">
-            <div style="display: flex; gap: 10px;">
-                <select id="start-year" class="year-list"></select>
-                <select id="start-month" class="month-list"></select>
-            </div>
-            <button class="btn-black" onclick="saveMember()" style="margin-top:10px;">حفظ البيانات</button>
-        </div>
-
-        <!-- تسجيل أداء شهر -->
-        <div class="section-box" style="border-right: 5px solid var(--success);">
-            <div class="section-title">💰 تسجيل أداء شهر</div>
-            <select id="select-member"></select>
-            <div style="display: flex; gap: 10px;">
-                <select id="pay-year" class="year-list"></select>
-                <select id="pay-month" class="month-list"></select>
-            </div>
-            <button class="btn-green" onclick="payMonth()">تأكيد استلام المبلغ</button>
-        </div>
-
-        <!-- سجل الدفعات المنظم والديون -->
-        <div class="section-box">
-            <div class="section-title" style="color:red;">📊 وضعية المشتركين وسجل الدفعات</div>
-            <div id="accordion-container">
-                <!-- يظهر هنا المشتركون مع ديونهم وسجلاتهم -->
-            </div>
-        </div>
+    <div id="page-subscribers" class="hidden">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <input class="inp" id="search-inp" placeholder="🔍 ابحث بالاسم أو الهاتف..." oninput="renderSubs()" style="flex:1"/>
+        <button class="btn btn-gold" onclick="openModal('modal-add')">➕ مشترك جديد</button>
+      </div>
+      <div class="sub-grid" id="sub-grid"></div>
     </div>
+
+    <div id="page-client" class="hidden">
+      <div style="max-width:400px; margin: 40px auto; text-align:center">
+        <div class="card" style="padding:25px">
+          <h3>🔍 تتبع اشتراكي</h3>
+          <p style="font-size:12px; color:var(--tx2); margin-bottom:15px">أدخل رقم هاتفك للتأكد من وضعية الاشتراك</p>
+          <input class="inp" id="client-phone-search" placeholder="06XXXXXXXX" type="tel" style="margin-bottom:10px"/>
+          <button class="btn btn-gold" style="width:100%" onclick="clientLookup()">بحث</button>
+        </div>
+        <div id="client-result" style="margin-top:20px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-add">
+  <div class="modal">
+    <div class="modal-head"><span>➕ مشترك جديد</span><button onclick="closeModal('modal-add')">✕</button></div>
+    <div class="modal-body">
+      <input class="inp" id="add-name" placeholder="الاسم الكامل" style="margin-bottom:10px"/>
+      <input class="inp" id="add-phone" placeholder="رقم الهاتف" style="margin-bottom:10px"/>
+      <input class="inp" id="add-fee" placeholder="الثمن (درهم)" type="number" style="margin-bottom:15px"/>
+      <button class="btn btn-gold" onclick="addSub()">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-pay">
+  <div class="modal">
+    <div class="modal-head"><span id="pay-title">📅 سجل الأداء</span><button onclick="closeModal('modal-pay')">✕</button></div>
+    <div class="modal-body">
+      <select class="inp" id="pay-year" onchange="renderPayGrid()" style="margin-bottom:15px">
+        <option value="2025">2025</option><option value="2026">2026</option>
+      </select>
+      <div class="pay-grid" id="pay-grid"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
-        databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
-        projectId: "smazilal-79a8a",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const monthsNames = ["يناير", "فبراير", "مارس", "أبريل", "ماي", "يونيو", "يوليوز", "غشت", "شتنبر", "أكتوبر", "نونبر", "دجنبر"];
-    
-    function setupLists() {
-        document.querySelectorAll('.month-list').forEach(el => {
-            monthsNames.forEach((m, i) => el.innerHTML += `<option value="${i+1}">${m}</option>`);
-        });
-        document.querySelectorAll('.year-list').forEach(el => {
-            for(let y=2025; y<=2036; y++) el.innerHTML += `<option value="${y}">${y}</option>`;
-        });
-    }
-    setupLists();
+// --- CONFIGURATION FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCW4JPshbopwnkCzeCViZIwbGNC0cY4o68",
+  databaseURL: "https://smazilal-79a8a-default-rtdb.firebaseio.com",
+  projectId: "smazilal-79a8a",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    let dataCache = {};
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonthNum = now.getMonth() + 1;
+// --- STATE ---
+let subs = [];
+let paySubId = null;
+const MONTHS = ["يناير","فبراير","مارس","أبريل","ماي","يونيو","يوليو","أغسطس","شتنبر","أكتوبر","نونبر","دجنبر"];
+const NOW_M = new Date().getMonth();
+const NOW_Y = new Date().getFullYear();
 
-    function unlock() { if(prompt("الرمز السر:") === "1234") document.getElementById('admin-panel').style.display='block'; }
+// --- CORE FUNCTIONS ---
+db.ref('subscribers').on('value', (snapshot) => {
+  const data = snapshot.val();
+  subs = data ? Object.keys(data).map(key => ({id: key, ...data[key]})) : [];
+  renderDashboard();
+  renderSubs();
+  document.getElementById('sub-count-side').innerText = subs.length + " مشترك";
+});
 
-    function saveMember() {
-        const n = document.getElementById('new-name').value;
-        const p = document.getElementById('new-price').value;
-        if(n && p) {
-            db.ref('members/' + Date.now()).set({ 
-                name: n, price: p, 
-                startYear: parseInt(document.getElementById('start-year').value), 
-                startMonth: parseInt(document.getElementById('start-month').value), 
-                payments: {} 
-            });
-            document.getElementById('new-name').value = "";
-        }
-    }
+function getDebt(sub) {
+  const pay = (sub.payments && sub.payments[NOW_Y]) ? sub.payments[NOW_Y] : Array(12).fill(0);
+  let unpaidCount = 0;
+  for(let i=0; i<=NOW_M; i++) if(!pay[i]) unpaidCount++;
+  return { count: unpaidCount, total: unpaidCount * parseInt(sub.fee) };
+}
 
-    db.ref('members/').on('value', (s) => {
-        dataCache = s.val() || {};
-        const container = document.getElementById('accordion-container');
-        const select = document.getElementById('select-member');
-        container.innerHTML = ""; select.innerHTML = "";
-        
-        for(let id in dataCache) {
-            let mData = dataCache[id];
-            select.innerHTML += `<option value="${id}">${mData.name}</option>`;
-            
-            // حساب الديون والشهور المتبقية
-            let unpaidList = getUnpaidMonths(mData);
-            let debtAmount = unpaidList.length * parseInt(mData.price);
-            let pCount = mData.payments ? Object.keys(mData.payments).length : 0;
+function switchRole(role) {
+  document.getElementById('btn-role-admin').classList.toggle('active', role==='admin');
+  document.getElementById('btn-role-client').classList.toggle('active', role==='client');
+  document.getElementById('sidebar').style.display = (role==='admin' && window.innerWidth > 600) ? 'flex' : 'none';
+  showPage(role==='admin' ? 'dashboard' : 'client');
+}
 
-            let html = `
-                <div class="member-row">
-                    <div class="member-head" onclick="document.getElementById('content-${id}').classList.toggle('active')">
-                        <div class="member-info">
-                            <strong>${mData.name}</strong>
-                            <span class="member-debt">${debtAmount > 0 ? 'دين: ' + debtAmount + ' DH' : '✅ لا يوجد دين'}</span>
-                        </div>
-                        <span style="font-size:0.7rem; background:#eee; padding:5px; border-radius:4px;">السجل (${pCount}) ⏬</span>
-                    </div>
-                    <div class="member-content" id="content-${id}">
-                        <table>
-                            <thead><tr><th>الشهر</th><th>التاريخ</th><th>إجراء</th></tr></thead>
-                            <tbody id="logs-${id}"></tbody>
-                        </table>
-                        <button onclick="del('${id}')" style="background:none; color:red; font-size:0.7rem; margin-top:10px; border:none; text-decoration:underline;">حذف المشترك نهائياً</button>
-                    </div>
-                </div>`;
-            
-            container.innerHTML += html;
-            const logBody = document.getElementById(`logs-${id}`);
-            if(mData.payments) {
-                for(let pKey in mData.payments) {
-                    let p = mData.payments[pKey];
-                    logBody.innerHTML += `<tr>
-                        <td>${p.month}/${p.year}</td>
-                        <td style="font-size:0.7rem">${p.date}</td>
-                        <td><button onclick="cancelPay('${id}','${pKey}')" style="color:red; background:none; border:none;">إلغاء</button></td>
-                    </tr>`;
-                }
-            }
-        }
-    });
+function showPage(page) {
+  ['dashboard', 'subscribers', 'client'].forEach(p => document.getElementById('page-'+p).classList.add('hidden'));
+  document.getElementById('page-'+page).classList.remove('hidden');
+  document.getElementById('nav-dash').classList.toggle('active', page==='dashboard');
+  document.getElementById('nav-subs').classList.toggle('active', page==='subscribers');
+}
 
-    function getUnpaidMonths(member) {
-        let unpaid = [];
-        let cy = member.startYear;
-        let cm = member.startMonth;
-        while (cy < currentYear || (cy === currentYear && cm <= currentMonthNum)) {
-            if (!member.payments || !member.payments[cy + '_m' + cm]) {
-                unpaid.push(`${monthsNames[cm-1]} ${cy}`);
-            }
-            cm++; if (cm > 12) { cm = 1; cy++; }
-        }
-        return unpaid;
-    }
+function renderDashboard() {
+  document.getElementById('today-date').innerText = new Date().toLocaleDateString('ar-MA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const totalIncome = subs.reduce((a,b)=> a + parseInt(b.fee), 0);
+  const totalDebt = subs.reduce((a,b)=> a + getDebt(b).total, 0);
+  
+  const stats = [
+    {label: 'المشتركين', val: subs.length, icon: '👥', color: 'var(--g)'},
+    {label: 'الدخل الشهري', val: totalIncome + ' د.م', icon: '💰', color: 'var(--gr)'},
+    {label: 'ديون عالقة', val: totalDebt + ' د.م', icon: '⚠️', color: 'var(--rd)'}
+  ];
+  
+  document.getElementById('stats-grid').innerHTML = stats.map(s => `
+    <div class="stat-card">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-val" style="color:${s.color}">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+    </div>
+  `).join('');
+}
 
-    function payMonth() {
-        const id = document.getElementById('select-member').value;
-        const m = document.getElementById('pay-month').value;
-        const y = document.getElementById('pay-year').value;
-        if(id) {
-            db.ref('members/' + id + '/payments/' + y + '_m' + m).set({
-                year: y, month: m, date: new Date().toLocaleDateString('ar-EG')
-            });
-        }
-    }
+function renderSubs() {
+  const query = document.getElementById('search-inp').value.toLowerCase();
+  const grid = document.getElementById('sub-grid');
+  grid.innerHTML = subs.filter(s => s.name.toLowerCase().includes(query) || s.phone.includes(query)).map(s => {
+    const debt = getDebt(s);
+    return `
+      <div class="sub-card">
+        <div style="display:flex; justify-content:space-between">
+          <div style="display:flex; gap:10px">
+            <div class="sub-avatar">${s.name[0]}</div>
+            <div><strong>${s.name}</strong><br><small style="color:var(--tx2)">${s.phone}</small></div>
+          </div>
+          <span style="color:${debt.count>0?'var(--rd)':'var(--gr)'}; font-size:12px; font-weight:bold">
+            ${debt.count>0 ? '⚠️ متأخر' : '✅ خالص'}
+          </span>
+        </div>
+        <div style="background:var(--s3); padding:10px; border-radius:8px; display:flex; justify-content:space-between">
+           <span>الواجب: ${s.fee} د.م</span>
+           <span style="color:var(--rd)">الدين: ${debt.total} د.م</span>
+        </div>
+        <div style="display:flex; gap:5px">
+          <button class="btn btn-gold btn-sm" onclick="openPay('${s.id}')">📅 الأشهر</button>
+          <button class="btn btn-red btn-sm" onclick="deleteSub('${s.id}')">🗑 حذف</button>
+          <a class="btn btn-dark btn-sm" href="https://wa.me/212${s.phone.substring(1)}?text=SmartWifi: تحية طيبة، بذمتكم ${debt.total} درهم" target="_blank">💬 واتساب</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
-    function checkStatus() {
-        const val = document.getElementById('c-search').value.trim().toLowerCase();
-        const res = document.getElementById('status-result');
-        let found = null;
-        for(let id in dataCache) { if(dataCache[id].name.toLowerCase() === val) { found = dataCache[id]; break; } }
-        
-        res.style.display = 'block';
-        if(found) {
-            let unpaid = getUnpaidMonths(found);
-            const isPaid = found.payments && found.payments[currentYear + '_m' + currentMonthNum];
-            res.style.background = isPaid ? '#e8f5e9' : '#ffebee';
-            res.innerHTML = `<h3>${found.name}</h3>`;
-            res.innerHTML += `<p style="color:${isPaid?'green':'red'}">${isPaid ? '✅ اشتراكك مفعل' : '❌ يرجى مراجعة الأداء'}</p>`;
-            if(unpaid.length > 0) {
-                res.innerHTML += `<span class="unpaid-tag">بذمتك الشهور التالية:</span>`;
-                res.innerHTML += `<div style="font-size:0.85rem; color:#d63031;">${unpaid.join(' - ')}</div>`;
-            }
-        } else {
-            res.style.background = '#eee'; res.innerHTML = "الاسم غير مسجل.";
-        }
-    }
+function addSub() {
+  const name = document.getElementById('add-name').value;
+  const phone = document.getElementById('add-phone').value;
+  const fee = document.getElementById('add-fee').value;
+  if(name && phone && fee) {
+    db.ref('subscribers').push({ name, phone, fee, payments: {[NOW_Y]: Array(12).fill(0)} });
+    closeModal('modal-add');
+  }
+}
 
-    function cancelPay(id, key) { if(confirm("إلغاء الشهر؟")) db.ref('members/'+id+'/payments/'+key).remove(); }
-    function del(id) { if(confirm("حذف المشترك؟")) db.ref('members/'+id).remove(); }
+function openPay(id) {
+  paySubId = id;
+  const sub = subs.find(s => s.id === id);
+  document.getElementById('pay-title').innerText = "سجل: " + sub.name;
+  renderPayGrid();
+  openModal('modal-pay');
+}
+
+function renderPayGrid() {
+  const sub = subs.find(s => s.id === paySubId);
+  const year = document.getElementById('pay-year').value;
+  const payments = (sub.payments && sub.payments[year]) ? sub.payments[year] : Array(12).fill(0);
+  
+  document.getElementById('pay-grid').innerHTML = MONTHS.map((m, i) => {
+    const isPaid = payments[i] === 1;
+    const isFuture = year > NOW_Y || (year == NOW_Y && i > NOW_M);
+    return `<div class="pay-cell ${isPaid?'pay-paid':'pay-unpaid'} ${isFuture?'pay-future':''}" 
+                 onclick="${isFuture?'':'togglePay('+i+')'}">
+              ${m}<br>${isPaid?'✓':'✗'}
+            </div>`;
+  }).join('');
+}
+
+function togglePay(monthIdx) {
+  const sub = subs.find(s => s.id === paySubId);
+  const year = document.getElementById('pay-year').value;
+  if(!sub.payments) sub.payments = {};
+  if(!sub.payments[year]) sub.payments[year] = Array(12).fill(0);
+  sub.payments[year][monthIdx] = sub.payments[year][monthIdx] === 1 ? 0 : 1;
+  db.ref('subscribers/' + paySubId).update({ payments: sub.payments });
+}
+
+function clientLookup() {
+  const phone = document.getElementById('client-phone-search').value;
+  const sub = subs.find(s => s.phone === phone);
+  const res = document.getElementById('client-result');
+  if(sub) {
+    const debt = getDebt(sub);
+    res.innerHTML = `
+      <div class="card" style="padding:20px; border-color:var(--g)">
+        <h4>أهلاً ${sub.name} 👋</h4>
+        <p style="margin:10px 0">حالة الاشتراك الحالي: ${debt.count>0 ? '❌ غير خالص' : '✅ خالص'}</p>
+        <div style="color:var(--rd); font-weight:bold; font-size:20px">${debt.total} DH</div>
+        <small>الديون المترتبة عليك</small>
+      </div>`;
+  } else {
+    res.innerHTML = `<p style="color:var(--rd)">رقم الهاتف غير مسجل!</p>`;
+  }
+}
+
+function deleteSub(id) { if(confirm("هل أنت متأكد من الحذف؟")) db.ref('subscribers/' + id).remove(); }
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 </script>
 </body>
 </html>
