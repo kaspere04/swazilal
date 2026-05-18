@@ -7,27 +7,19 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --primary: #FFD400; --dark: #000; --success: #27ae60; --danger: #e74c3c; --gray: #f4f4f4; }
+        :root { --primary: #FFD400; --dark: #000; --success: #27ae60; --danger: #e74c3c; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: #f0f2f5; padding-bottom: 50px; }
         header { background: var(--dark); color: var(--primary); text-align: center; padding: 20px; border-bottom: 3px solid var(--primary); }
         .container { max-width: 850px; margin: auto; padding: 15px; }
         .section-box { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        /* تصميم لوحة الإحصائيات الجديدة */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: #fff; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .stat-card span { display: block; font-size: 0.8rem; color: #666; margin-bottom: 5px; }
-        .stat-card strong { font-size: 1.2rem; color: var(--dark); }
-        .progress-container { background: #eee; border-radius: 10px; height: 12px; margin: 10px 0; overflow: hidden; }
-        .progress-bar { background: var(--success); height: 100%; width: 0%; transition: 0.5s; }
-
         input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; }
         button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; padding: 12px; width: 100%; }
         .btn-black { background: var(--dark); color: var(--primary); }
         .btn-green { background: var(--success); color: white; }
         
+        /* تصميم السجل المنظم */
         .member-row { border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .member-head { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .member-info { display: flex; flex-direction: column; gap: 4px; }
@@ -45,10 +37,11 @@
 
 <header>
     <h1>SMART WIFI AZILAL</h1>
-    <p style="font-size:0.8rem; color:#fff;">Secure & Smart Subscription Management</p>
+    <p style="font-size: 0.8rem; color: #fff;">إصدار الإدارة الذكية (2025 - 2036)</p>
 </header>
 
 <div class="container">
+    <!-- فحص الحالة للزبون -->
     <div class="section-box">
         <div class="section-title">🔍 فحص حالة الاشتراك</div>
         <div style="display: flex; gap: 8px;">
@@ -60,20 +53,7 @@
     </div>
 
     <div id="admin-panel" class="admin-only">
-        
-        <div class="stats-grid">
-            <div class="stat-card"><span>المشتركين</span><strong id="stat-total">0</strong></div>
-            <div class="stat-card"><span>دخل هذا الشهر</span><strong id="stat-income" style="color:var(--success)">0 د.م</strong></div>
-            <div class="stat-card"><span>ديون عالقة</span><strong id="stat-debt" style="color:var(--danger)">0 د.م</strong></div>
-        </div>
-        <div class="section-box" style="padding: 15px;">
-            <div style="display:flex; justify-content: space-between; font-size: 0.8rem;">
-                <span>نسبة دفع الشهر الحالي</span>
-                <span id="stat-percent">0%</span>
-            </div>
-            <div class="progress-container"><div class="progress-bar" id="stat-bar"></div></div>
-        </div>
-
+        <!-- إضافة مشترك جديد -->
         <div class="section-box">
             <div class="section-title">👤 إضافة مشترك جديد</div>
             <input type="text" id="new-name" placeholder="الاسم الكامل">
@@ -85,6 +65,7 @@
             <button class="btn-black" onclick="saveMember()" style="margin-top:10px;">حفظ البيانات</button>
         </div>
 
+        <!-- تسجيل أداء شهر -->
         <div class="section-box" style="border-right: 5px solid var(--success);">
             <div class="section-title">💰 تسجيل أداء شهر</div>
             <select id="select-member"></select>
@@ -95,9 +76,12 @@
             <button class="btn-green" onclick="payMonth()">تأكيد استلام المبلغ</button>
         </div>
 
+        <!-- سجل الدفعات المنظم والديون -->
         <div class="section-box">
             <div class="section-title" style="color:red;">📊 وضعية المشتركين وسجل الدفعات</div>
-            <div id="accordion-container"></div>
+            <div id="accordion-container">
+                <!-- يظهر هنا المشتركون مع ديونهم وسجلاتهم -->
+            </div>
         </div>
     </div>
 </div>
@@ -140,47 +124,30 @@
                 payments: {} 
             });
             document.getElementById('new-name').value = "";
-            document.getElementById('new-price').value = "";
         }
     }
 
     db.ref('members/').on('value', (s) => {
         dataCache = s.val() || {};
-        updateUI();
-    });
-
-    function updateUI() {
         const container = document.getElementById('accordion-container');
         const select = document.getElementById('select-member');
         container.innerHTML = ""; select.innerHTML = "";
         
-        let totalIncome = 0;
-        let totalDebt = 0;
-        let paidThisMonth = 0;
-        let totalSubs = Object.keys(dataCache).length;
-
         for(let id in dataCache) {
             let mData = dataCache[id];
             select.innerHTML += `<option value="${id}">${mData.name}</option>`;
             
+            // حساب الديون والشهور المتبقية
             let unpaidList = getUnpaidMonths(mData);
             let debtAmount = unpaidList.length * parseInt(mData.price);
-            totalDebt += debtAmount;
-
-            let isPaidNow = mData.payments && mData.payments[currentYear + '_m' + currentMonthNum];
-            if(isPaidNow) {
-                totalIncome += parseInt(mData.price);
-                paidThisMonth++;
-            }
-
             let pCount = mData.payments ? Object.keys(mData.payments).length : 0;
 
-            container.innerHTML += `
+            let html = `
                 <div class="member-row">
                     <div class="member-head" onclick="document.getElementById('content-${id}').classList.toggle('active')">
                         <div class="member-info">
                             <strong>${mData.name}</strong>
-                            <span class="member-debt">${debtAmount > 0 ? 'دين: ' + debtAmount + ' DH' : '✅ لا يوجد دين'} ${isPaidNow ? ' | <span style="color:green">تم دفع شهر '+currentMonthNum+'</span>' : ''}</span>
+                            <span class="member-debt">${debtAmount > 0 ? 'دين: ' + debtAmount + ' DH' : '✅ لا يوجد دين'}</span>
                         </div>
                         <span style="font-size:0.7rem; background:#eee; padding:5px; border-radius:4px;">السجل (${pCount}) ⏬</span>
                     </div>
@@ -193,6 +160,7 @@
                     </div>
                 </div>`;
             
+            container.innerHTML += html;
             const logBody = document.getElementById(`logs-${id}`);
             if(mData.payments) {
                 for(let pKey in mData.payments) {
@@ -205,15 +173,7 @@
                 }
             }
         }
-
-        // تحديث أرقام الإحصائيات
-        document.getElementById('stat-total').innerText = totalSubs;
-        document.getElementById('stat-income').innerText = totalIncome + " د.م";
-        document.getElementById('stat-debt').innerText = totalDebt + " د.م";
-        let percent = totalSubs > 0 ? Math.round((paidThisMonth / totalSubs) * 100) : 0;
-        document.getElementById('stat-percent').innerText = percent + "%";
-        document.getElementById('stat-bar').style.width = percent + "%";
-    }
+    });
 
     function getUnpaidMonths(member) {
         let unpaid = [];
