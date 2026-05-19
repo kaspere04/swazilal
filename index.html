@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart WiFi Azilal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#F5C518;--gd:#c9a010;
+  --bg:#0d0d0d;--s1:#141414;--s2:#1c1c1c;--s3:#252525;--s4:#2e2e2e;
+  --tx:#f0f0f0;--tx2:#999;--tx3:#555;
+  --gr:#22c55e;--rd:#ef4444;--bl:#3b82f6;--or:#f97316;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+button,input,select{font-family:'Cairo',sans-serif}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--g);border-radius:3px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at top,#1a1400,#0d0d0d)}
+.login-box{background:var(--s2);border:1px solid #F5C51830;border-radius:18px;padding:32px 24px;width:100%;max-width:340px;text-align:center}
+.tab-row{display:flex;background:var(--s3);border-radius:9px;padding:3px;gap:3px;margin-bottom:22px}
+.tab-btn{flex:1;border:none;border-radius:7px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.tab-active{background:var(--g);color:#111}
+.tab-inactive{background:none;color:var(--tx2)}
+.err-box{background:#ef444415;border:1px solid #ef444430;border-radius:9px;padding:10px;color:var(--rd);font-size:13px;margin-bottom:12px;display:none}
+.info-box{background:#3b82f615;border:1px solid #3b82f630;border-radius:9px;padding:10px;color:var(--bl);font-size:12px;margin-bottom:12px}
+
+/* HEADER */
+.hdr{background:var(--s1);border-bottom:1px solid #1e1e1e;height:54px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-txt{font-weight:900;font-size:14px;color:var(--g)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.sync-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot-ok{background:var(--gr)}.dot-err{background:var(--rd)}.dot-load{background:var(--or);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid #222;z-index:100;padding:4px 0 8px}
+.bottom-nav-inner{display:flex;justify-content:space-around}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;color:var(--tx3);font-size:9px;font-weight:700;cursor:pointer;padding:4px 8px;border-radius:10px;transition:all .2s}
+.bnav-btn.active{color:var(--g)}
+.bnav-icon{font-size:18px}
+
+/* SIDEBAR */
+.sidebar{width:165px;background:var(--s1);border-left:1px solid #1e1e1e;padding:14px 10px;display:flex;flex-direction:column;gap:4px;position:sticky;top:54px;height:calc(100vh - 54px);flex-shrink:0;overflow-y:auto}
+.nav-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:9px;border:1px solid transparent;background:none;color:var(--tx2);font-size:12px;cursor:pointer;width:100%;text-align:right;transition:all .2s}
+.nav-btn.active{background:#F5C51815;border-color:#F5C51838;color:var(--g);font-weight:700}
+.sidebar-foot{margin-top:auto;padding-top:12px;border-top:1px solid #1e1e1e;font-size:11px;color:var(--tx3);text-align:center}
+
+/* LAYOUT */
+.app-wrap{display:flex;flex-direction:column;min-height:100vh}
+.body-row{display:flex;flex:1}
+.main{flex:1;padding:16px;overflow-y:auto;padding-bottom:80px}
+
+/* CARDS */
+.card{background:var(--s2);border-radius:14px;border:1px solid #252525;padding:16px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:var(--s2);border-radius:12px;border:1px solid #252525;padding:14px;position:relative;overflow:hidden}
+.stat-bg{position:absolute;top:-8px;left:-8px;font-size:48px;opacity:.07}
+.stat-val{font-weight:900;font-size:22px}
+.stat-lbl{font-size:11px;color:var(--tx2);margin-top:3px}
+
+/* BUTTONS */
+.btn{border:none;border-radius:9px;font-weight:700;cursor:pointer;transition:opacity .15s;font-family:inherit}
+.btn:hover{opacity:.8}
+.btn-gold{background:var(--g);color:#111;padding:10px 18px;font-size:14px}
+.btn-dark{background:var(--s3);color:var(--tx);border:1px solid #333;padding:10px 18px;font-size:14px}
+.btn-red{background:#ef444418;color:var(--rd);border:1px solid #ef444433;padding:10px 18px;font-size:14px}
+.btn-green{background:#22c55e18;color:var(--gr);border:1px solid #22c55e33;padding:10px 18px;font-size:14px}
+.btn-ghost{background:none;color:var(--tx2);border:1px solid #333;padding:10px 18px;font-size:14px}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* INPUTS */
+.inp-grp{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.inp-lbl{font-size:12px;color:var(--tx2);font-weight:600}
+.inp{background:var(--s3);border:1px solid #333;border-radius:9px;padding:10px 13px;color:var(--tx);font-size:14px;outline:none;width:100%;font-family:inherit;transition:border .2s}
+.inp:focus{border-color:var(--g)}
+
+/* BADGE */
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.b-green{background:#22c55e18;color:var(--gr);border:1px solid #22c55e33}
+.b-red{background:#ef444418;color:var(--rd);border:1px solid #ef444433}
+.b-blue{background:#3b82f618;color:var(--bl);border:1px solid #3b82f633}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px)}
+.modal{background:var(--s2);border-radius:14px;border:1px solid #2a2a2a;width:100%;max-width:500px;max-height:92vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #2a2a2a}
+.modal-ttl{font-weight:800;font-size:15px}
+.modal-x{background:none;border:none;color:var(--tx2);font-size:20px;cursor:pointer}
+.modal-bd{padding:18px}
+
+/* SUB */
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.sub-card{background:var(--s2);border-radius:14px;border:1px solid #252525;padding:14px;display:flex;flex-direction:column;gap:11px}
+.sub-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#c9a010);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:#111;flex-shrink:0}
+.sub-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* PAY */
+.pay-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.pay-cell{border-radius:9px;padding:8px 3px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;font-family:inherit;background:none;transition:all .15s}
+.p-paid{background:#22c55e18;border-color:#22c55e44;color:var(--gr)}
+.p-unpaid{background:#ef444418;border-color:#ef444444;color:var(--rd)}
+.p-future{background:var(--s4);border-color:#33333344;color:var(--tx3);cursor:default}
+
+/* PROGRESS */
+.prog-bar{background:var(--s4);border-radius:99px;height:11px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--g),var(--gr));transition:width .8s}
+
+/* RECEIPT */
+.receipt{background:#fff;color:#111;border-radius:12px;padding:24px;font-family:'Cairo',sans-serif;direction:rtl;max-width:300px;margin:0 auto}
+.receipt-divider{border:none;border-top:2px dashed #ddd;margin:12px 0}
+.receipt-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px}
+.receipt-total{background:#F5C518;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;margin-top:12px}
+
+/* REPORT */
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.report-card{background:var(--s3);border-radius:10px;padding:14px;text-align:center}
+.report-val{font-weight:900;font-size:20px}
+.report-lbl{font-size:11px;color:var(--tx2);margin-top:4px}
+
+/* HISTORY */
+.hist-item{background:var(--s3);border-radius:9px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1a1400,#0d0d0d);border:1px solid #F5C51828;border-radius:14px;padding:20px;margin-bottom:16px}
+.footer{background:var(--s1);border-top:1px solid #1e1e1e;padding:8px 16px;text-align:center;font-size:11px;color:var(--tx3);margin-bottom:60px}
+.hidden{display:none!important}
+.spinner{width:32px;height:32px;border:3px solid #333;border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:640px){
+  .sidebar{display:none!important}
+  .bottom-nav{display:block}
+  .main{padding:12px;padding-bottom:95px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .sub-grid{grid-template-columns:1fr}
+}
+@media(min-width:641px){
+  .bottom-nav{display:none!important}
+  .sidebar{display:flex!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOADING SCREEN ══ -->
+<div id="loading-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div class="spinner"></div>
+  <div style="color:var(--tx2);font-size:14px">جاري التحميل...</div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen" class="login-wrap hidden">
+  <div class="login-box">
+    <svg width="56" height="56" viewBox="0 0 80 80" fill="none" style="margin-bottom:14px">
+      <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+      <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#111"/>
+      <path d="M40 62 L28 51 Q34 44 40 44 Q46 44 52 51 Z" fill="#F5C518"/>
+      <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+      <path d="M6 28 Q22 6 40 6 Q58 6 74 28" stroke="#F5C518" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div style="font-weight:900;font-size:20px;color:var(--g);margin-bottom:4px">Smart WiFi Azilal</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:22px">📡 سمارت وايفاي .. توصلك فينما كنت</div>
+
+    <div class="tab-row">
+      <button id="tab-admin" class="tab-btn tab-active" onclick="switchTab('admin')">🔑 إدارة</button>
+      <button id="tab-client" class="tab-btn tab-inactive" onclick="switchTab('client')">👤 عميل</button>
+    </div>
+
+    <!-- Admin login -->
+    <div id="form-admin">
+      <div class="info-box">🔒 تسجيل دخول آمن عبر Firebase</div>
+      <div id="err-admin" class="err-box"></div>
+      <div class="inp-grp">
+        <label class="inp-lbl">البريد الإلكتروني</label>
+        <input class="inp" id="admin-email" type="email" placeholder="admin@example.com" value="Kaspere04@gmail.com"/>
+      </div>
+      <div class="inp-grp">
+        <label class="inp-lbl">كلمة السر</label>
+        <input class="inp" id="admin-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="btn btn-gold" style="width:100%;padding:12px;font-size:15px" id="login-btn" onclick="doLogin()">🔓 دخول</button>
+    </div>
+
+    <!-- Client login -->
+    <div id="form-client" class="hidden">
+      <div id="err-client" class="err-box">لم يتم العثور على اشتراك بهذا الرقم</div>
+      <div class="inp-grp">
+        <label class="inp-lbl">رقم هاتفك</label>
+        <input class="inp" id="client-phone" type="tel" placeholder="06XXXXXXXX" onkeydown="if(event.key==='Enter')doClientLogin()"/>
+      </div>
+      <button class="btn btn-gold" style="width:100%;padding:12px;font-size:15px" onclick="doClientLogin()">🔍 تحقق من اشتراكي</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══ -->
+<div id="admin-app" class="hidden app-wrap">
+  <div class="hdr">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+        <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+        <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#111"/>
+        <path d="M40 62 L28 51 Q34 44 40 44 Q46 44 52 51 Z" fill="#F5C518"/>
+        <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+        <path d="M6 28 Q22 6 40 6 Q58 6 74 28" stroke="#F5C518" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-txt">Smart WiFi Azilal</span>
+    </div>
+    <div class="hdr-right">
+      <div class="sync-wrap"><span class="dot dot-load" id="sync-dot"></span><span id="sync-lbl">...</span></div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">🚪 خروج</button>
+    </div>
+  </div>
+
+  <div class="body-row">
+    <div class="sidebar">
+      <button class="nav-btn active" onclick="showPage('dashboard')" id="sb-dashboard">📊 لوحة التحكم</button>
+      <button class="nav-btn" onclick="showPage('subscribers')" id="sb-subscribers">👥 المشتركون</button>
+      <button class="nav-btn" onclick="showPage('reports')" id="sb-reports">📈 التقارير</button>
+      <button class="nav-btn" onclick="showPage('history')" id="sb-history">🕒 سجل المدفوعات</button>
+      <div class="sidebar-foot" id="sub-count-sb">—</div>
+    </div>
+
+    <div class="main">
+      <!-- DASHBOARD -->
+      <div id="page-dashboard">
+        <div class="hero">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+            <svg width="38" height="38" viewBox="0 0 80 80" fill="none">
+              <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+              <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#111"/>
+              <path d="M40 62 L28 51 Q34 44 40 44 Q46 44 52 51 Z" fill="#F5C518"/>
+              <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+              <path d="M6 28 Q22 6 40 6 Q58 6 74 28" stroke="#F5C518" stroke-width="5" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <div style="font-weight:900;font-size:18px;color:var(--g)">Smart WiFi Azilal</div>
+              <div style="font-size:11px;color:var(--tx2)" id="today-date"></div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--tx2);border-top:1px solid #222;padding-top:10px">📡 سمارت وايفاي .. توصلك فينما كنت</div>
+        </div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="card" style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:12px">📊 نسبة الدفع — <span id="month-name"></span></div>
+          <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+          <div style="font-size:12px;color:var(--tx2);margin-top:7px" id="prog-text"></div>
+        </div>
+        <div class="card" style="margin-bottom:16px;border-color:#22c55e22">
+          <div style="font-weight:700;font-size:13px;margin-bottom:8px">💬 تذكير جماعي بالواتساب</div>
+          <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">إرسال رسالة لجميع المتأخرين دفعة واحدة</div>
+          <button class="btn btn-green btn-sm" onclick="bulkWhatsapp()">📤 إرسال للمتأخرين</button>
+        </div>
+        <div id="debtors-wrap"></div>
+      </div>
+
+      <!-- SUBSCRIBERS -->
+      <div id="page-subscribers" class="hidden">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <input class="inp" id="search-inp" placeholder="🔍 بحث..." oninput="renderSubs()" style="flex:1;min-width:120px"/>
+          <select class="inp" id="filter-sel" onchange="renderSubs()" style="width:auto;min-width:110px">
+            <option value="all">الكل</option>
+            <option value="paid">دفعوا</option>
+            <option value="unpaid">لم يدفعوا</option>
+            <option value="debtors">متأخرون</option>
+          </select>
+          <select class="inp" id="zone-filter" onchange="renderSubs()" style="width:auto;min-width:100px">
+            <option value="all">كل المناطق</option>
+          </select>
+          <button class="btn btn-gold btn-sm" onclick="openAdd()">➕ جديد</button>
+        </div>
+        <div class="sub-grid" id="sub-grid"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="page-reports" class="hidden">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+          <h2 style="font-weight:800;font-size:16px">📈 التقارير الشهرية</h2>
+          <select class="inp" id="report-month" style="width:auto" onchange="window.renderReports()"></select>
+          <select class="inp" id="report-year" style="width:auto" onchange="window.renderReports()"></select>
+        </div>
+        <div id="report-content"></div>
+      </div>
+
+      <!-- HISTORY -->
+      <div id="page-history" class="hidden">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+          <h2 style="font-weight:800;font-size:16px">🕒 سجل المدفوعات</h2>
+          <input class="inp" id="hist-search" placeholder="🔍 بحث بالاسم..." oninput="window.renderHistory()" style="flex:1;min-width:140px"/>
+        </div>
+        <div id="history-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="bnav-btn active" id="bn-dashboard" onclick="showPage('dashboard')"><span class="bnav-icon">📊</span>الرئيسية</button>
+      <button class="bnav-btn" id="bn-subscribers" onclick="showPage('subscribers')"><span class="bnav-icon">👥</span>المشتركون</button>
+      <button class="bnav-btn" id="bn-reports" onclick="showPage('reports')"><span class="bnav-icon">📈</span>التقارير</button>
+      <button class="bnav-btn" id="bn-history" onclick="showPage('history')"><span class="bnav-icon">🕒</span>السجل</button>
+    </div>
+  </div>
+  <div class="footer">Smart WiFi Azilal © 2026 | 📞 0602359188</div>
+</div>
+
+<!-- ══ CLIENT APP ══ -->
+<div id="client-app" class="hidden app-wrap">
+  <div class="hdr">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+        <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+        <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#111"/>
+        <path d="M40 62 L28 51 Q34 44 40 44 Q46 44 52 51 Z" fill="#F5C518"/>
+        <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+        <path d="M6 28 Q22 6 40 6 Q58 6 74 28" stroke="#F5C518" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-txt">Smart WiFi Azilal</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="clientLogout()">🔙 رجوع</button>
+  </div>
+  <div style="flex:1;padding:16px;padding-bottom:30px">
+    <div style="max-width:420px;margin:0 auto" id="client-detail"></div>
+  </div>
+  <div class="footer">Smart WiFi Azilal © 2026 | 📞 0602359188</div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="overlay hidden" id="modal-add">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-ttl">➕ مشترك جديد</span><button class="modal-x" onclick="closeModal('modal-add')">✕</button></div>
+    <div class="modal-bd">
+      <div class="inp-grp"><label class="inp-lbl">الاسم الكامل</label><input class="inp" id="add-name" placeholder="أحمد بنعلي"/></div>
+      <div class="inp-grp"><label class="inp-lbl">رقم الهاتف</label><input class="inp" id="add-phone" placeholder="06XXXXXXXX" type="tel"/></div>
+      <div class="inp-grp"><label class="inp-lbl">الاشتراك الشهري (درهم)</label><input class="inp" id="add-fee" placeholder="150" type="number" min="1"/></div>
+      <div class="inp-grp"><label class="inp-lbl">المنطقة / الحي</label><input class="inp" id="add-zone" placeholder="مثال: حي النور"/></div>
+      <div id="add-err" style="color:var(--rd);font-size:12px;margin-bottom:10px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold" onclick="addSub()">➕ إضافة</button>
+        <button class="btn btn-ghost" onclick="closeModal('modal-add')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-edit">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-ttl">✏️ تعديل المشترك</span><button class="modal-x" onclick="closeModal('modal-edit')">✕</button></div>
+    <div class="modal-bd">
+      <input type="hidden" id="edit-id"/>
+      <div class="inp-grp"><label class="inp-lbl">الاسم الكامل</label><input class="inp" id="edit-name"/></div>
+      <div class="inp-grp"><label class="inp-lbl">رقم الهاتف</label><input class="inp" id="edit-phone" type="tel"/></div>
+      <div class="inp-grp"><label class="inp-lbl">الاشتراك الشهري (درهم)</label><input class="inp" id="edit-fee" type="number" min="1"/></div>
+      <div class="inp-grp"><label class="inp-lbl">المنطقة / الحي</label><input class="inp" id="edit-zone"/></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold" onclick="saveEdit()">💾 حفظ</button>
+        <button class="btn btn-ghost" onclick="closeModal('modal-edit')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-pay">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-ttl" id="pay-title">📅 الاشتراكات</span><button class="modal-x" onclick="closeModal('modal-pay')">✕</button></div>
+    <div class="modal-bd">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-size:13px;color:var(--tx2)">السنة:</span>
+        <select class="inp" id="pay-year" onchange="renderPayGrid()" style="width:auto"></select>
+        <span style="font-size:12px;color:var(--tx3)" id="pay-debt"></span>
+      </div>
+      <div class="pay-grid" id="pay-grid"></div>
+      <p style="font-size:11px;color:var(--tx3);margin-top:10px">انقر على الشهر لتغيير حالته</p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-del">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-hd"><span class="modal-ttl">🗑 تأكيد الحذف</span><button class="modal-x" onclick="closeModal('modal-del')">✕</button></div>
+    <div class="modal-bd">
+      <p style="color:var(--tx2);margin-bottom:18px;font-size:14px">هل أنت متأكد؟ لا يمكن التراجع.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-red" onclick="confirmDel()">نعم، احذف</button>
+        <button class="btn btn-ghost" onclick="closeModal('modal-del')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-receipt">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-hd"><span class="modal-ttl">🧾 وصل الدفع</span><button class="modal-x" onclick="closeModal('modal-receipt')">✕</button></div>
+    <div class="modal-bd">
+      <div id="receipt-content"></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-gold" onclick="shareReceipt()">📤 مشاركة واتساب</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-receipt')">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-bulk">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-ttl">💬 تذكير جماعي</span><button class="modal-x" onclick="closeModal('modal-bulk')">✕</button></div>
+    <div class="modal-bd" id="bulk-content"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, get, set, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ── Firebase Config ──────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyC1whJIf4ag6b4q3gttHRbOw9x_xjGmQvc",
+  authDomain: "smartwifiazilal.firebaseapp.com",
+  databaseURL: "https://smartwifiazilal-default-rtdb.firebaseio.com",
+  projectId: "smartwifiazilal",
+  storageBucket: "smartwifiazilal.firebasestorage.app",
+  messagingSenderId: "890928701629",
+  appId: "1:890928701629:web:bc6496ce0af4e7a61d17d4"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getDatabase(app);
+
+// ── Constants ─────────────────────────────────────
+const MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+const NM = new Date().getMonth();
+const NY = new Date().getFullYear();
+
+let subs=[], payFbKey=null, delFbKey=null, clientS=null, lastReceipt=null;
+
+// ── Auth State ────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  hide('loading-screen');
+  if (user) {
+    show('admin-app');
+    hide('login-screen');
+    initAdmin();
+  } else {
+    show('login-screen');
+    hide('admin-app');
+  }
+});
+
+// ── Auth Functions ────────────────────────────────
+window.doLogin = async function() {
+  const email = document.getElementById('admin-email').value.trim();
+  const pass  = document.getElementById('admin-pass').value;
+  const errEl = document.getElementById('err-admin');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display='none';
+  btn.textContent='⏳ جاري الدخول...';
+  btn.disabled=true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/wrong-password':       '❌ كلمة السر غير صحيحة',
+      'auth/user-not-found':       '❌ البريد الإلكتروني غير موجود',
+      'auth/invalid-email':        '❌ البريد الإلكتروني غير صحيح',
+      'auth/too-many-requests':    '⚠️ محاولات كثيرة، انتظر قليلاً',
+      'auth/invalid-credential':   '❌ البريد أو كلمة السر غير صحيحة',
+    };
+    errEl.textContent = msgs[e.code] || '❌ خطأ في تسجيل الدخول';
+    errEl.style.display='block';
+    btn.textContent='🔓 دخول';
+    btn.disabled=false;
+  }
+};
+
+window.doLogout = async function() {
+  await signOut(auth);
+  hide('admin-app');
+  show('login-screen');
+  document.getElementById('admin-pass').value='';
+};
+
+// ── DB Helpers ────────────────────────────────────
+function sync(s) {
+  const d=document.getElementById('sync-dot'), l=document.getElementById('sync-lbl');
+  if(!d)return;
+  d.className='dot '+(s==='ok'?'dot-ok':s==='err'?'dot-err':'dot-load');
+  l.textContent=s==='ok'?'متزامن ✓':s==='err'?'خطأ':'...';
+}
+
+async function loadSubs() {
+  sync('loading');
+  try {
+    const snap = await get(ref(db,'subscribers'));
+    subs = snap.exists() ? Object.entries(snap.val()).map(([k,v])=>({...v,fbKey:k})) : [];
+    sync('ok'); return true;
+  } catch { sync('err'); return false; }
+}
+
+// ── Helpers ───────────────────────────────────────
+function getPay(sub,year){
+  if(!sub.payments)return Array(12).fill(0);
+  const p=sub.payments[year]; if(!p)return Array(12).fill(0);
+  return Array.isArray(p)?p:Object.values(p);
+}
+function getDebt(sub,year=NY){
+  const pay=getPay(sub,year);
+  const unpaid=pay.slice(0,NM+1).filter(v=>!v).length;
+  return{unpaid,total:unpaid*sub.fee};
+}
+function ensurePay(sub,year){
+  if(!sub.payments)sub.payments={};
+  if(!sub.payments[year])sub.payments[year]=Array(12).fill(0);
+  else if(!Array.isArray(sub.payments[year]))sub.payments[year]=Object.values(sub.payments[year]);
+}
+function updateZoneFilter(){
+  const sel=document.getElementById('zone-filter'); if(!sel)return;
+  const cur=sel.value, zones=[...new Set(subs.map(s=>s.zone).filter(Boolean))];
+  sel.innerHTML=`<option value="all">كل المناطق</option>`+zones.map(z=>`<option value="${z}"${z===cur?' selected':''}>${z}</option>`).join('');
+}
+
+// ── UI helpers ────────────────────────────────────
+function show(id){document.getElementById(id).classList.remove('hidden')}
+function hide(id){document.getElementById(id).classList.add('hidden')}
+window.closeModal = id => document.getElementById(id).classList.add('hidden');
+document.querySelectorAll('.overlay').forEach(el=>{
+  el.addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden')});
+});
+
+window.switchTab = function(t){
+  const isA=t==='admin';
+  document.getElementById('form-admin').classList.toggle('hidden',!isA);
+  document.getElementById('form-client').classList.toggle('hidden',isA);
+  document.getElementById('tab-admin').className='tab-btn '+(isA?'tab-active':'tab-inactive');
+  document.getElementById('tab-client').className='tab-btn '+(isA?'tab-inactive':'tab-active');
+};
+
+// ── Admin init ────────────────────────────────────
+async function initAdmin(){
+  document.getElementById('today-date').textContent=
+    new Date().toLocaleDateString('ar-MA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('month-name').textContent=MONTHS[NM]+' '+NY;
+  const rm=document.getElementById('report-month');
+  const ry=document.getElementById('report-year');
+  if(rm)rm.innerHTML=MONTHS.map((m,i)=>`<option value="${i}"${i===NM?' selected':''}>${m}</option>`).join('');
+  if(ry){let s='';for(let y=2024;y<=2037;y++)s+=`<option value="${y}"${y===NY?' selected':''}>${y}</option>`;ry.innerHTML=s;}
+  await loadSubs();
+  renderDashboard();
+}
+
+// ── Pages ─────────────────────────────────────────
+window.showPage = function(p){
+  ['dashboard','subscribers','reports','history'].forEach(id=>{
+    document.getElementById('page-'+id).classList.toggle('hidden',id!==p);
+    const sb=document.getElementById('sb-'+id); if(sb)sb.classList.toggle('active',id===p);
+    const bn=document.getElementById('bn-'+id); if(bn)bn.classList.toggle('active',id===p);
+  });
+  if(p==='subscribers') loadSubs().then(()=>{updateZoneFilter();renderSubs();});
+  if(p==='dashboard')   loadSubs().then(renderDashboard);
+  if(p==='reports')     loadSubs().then(renderReports);
+  if(p==='history')     loadSubs().then(renderHistory);
+};
+
+// ── Dashboard ─────────────────────────────────────
+function renderDashboard(){
+  const sc=document.getElementById('sub-count-sb'); if(sc)sc.textContent=subs.length+' مشترك';
+  const fees=subs.reduce((a,s)=>a+s.fee,0);
+  const debt=subs.reduce((a,s)=>a+getDebt(s).total,0);
+  const dbtors=subs.filter(s=>getDebt(s).unpaid>0);
+  const paid=subs.filter(s=>!!getPay(s,NY)[NM]).length;
+  const pct=subs.length?Math.round(paid/subs.length*100):0;
+
+  document.getElementById('stats-grid').innerHTML=[
+    {i:'👥',l:'المشتركون',       v:subs.length,    c:'var(--g)'},
+    {i:'💰',l:'إيرادات شهرية',   v:fees+' د.م',    c:'var(--gr)'},
+    {i:'⚠️',l:'متأخرون',         v:dbtors.length,  c:'var(--rd)'},
+    {i:'📅',l:'دفعوا الشهر',    v:paid+'/'+subs.length,c:'var(--bl)'},
+    {i:'🧾',l:'مجموع المتأخرات',v:debt+' د.م',    c:'var(--or)'},
+  ].map(s=>`<div class="stat-card"><div class="stat-bg">${s.i}</div>
+    <div class="stat-val" style="color:${s.c}">${s.v}</div>
+    <div class="stat-lbl">${s.l}</div></div>`).join('');
+
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=`${paid} من ${subs.length} دفع (${pct}%)`;
+
+  const dw=document.getElementById('debtors-wrap');
+  if(!dbtors.length){dw.innerHTML='';return;}
+  dw.innerHTML=`<div class="card" style="border-color:#ef444422">
+    <div style="font-weight:700;font-size:13px;color:var(--rd);margin-bottom:12px">⚠️ المتأخرون (${dbtors.length})</div>
+    ${dbtors.map(s=>{const{unpaid,total}=getDebt(s);return`
+    <div style="background:var(--s3);border-radius:9px;padding:11px 13px;display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div><div style="font-weight:700;font-size:14px">${s.name}</div>
+      <div style="font-size:11px;color:var(--tx2)">${s.phone}${s.zone?' · '+s.zone:''}</div></div>
+      <div style="text-align:left"><div style="color:var(--rd);font-weight:800">${total} د.م</div>
+      <div style="font-size:11px;color:var(--tx3)">${unpaid} شهر</div></div>
+    </div>`;}).join('')}
+  </div>`;
+}
+
+// ── Bulk WhatsApp ─────────────────────────────────
+window.bulkWhatsapp = function(){
+  const dbtors=subs.filter(s=>getDebt(s).unpaid>0);
+  if(!dbtors.length){alert('لا يوجد متأخرون حالياً ✅');return;}
+  document.getElementById('bulk-content').innerHTML=`
+    <p style="color:var(--tx2);margin-bottom:14px;font-size:13px">${dbtors.length} مشترك متأخر — انقر على كل واحد لإرسال الرسالة</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+    ${dbtors.map(s=>{
+      const{unpaid,total}=getDebt(s);
+      const msg=encodeURIComponent(`السلام عليكم ${s.name}،\nيرجى تسديد اشتراك الإنترنت.\n💰 المبلغ: ${total} درهم (${unpaid} شهر)\n📡 Smart WiFi Azilal | 📞 0602359188`);
+      return`<a href="https://wa.me/212${s.phone.slice(1)}?text=${msg}" target="_blank"
+        style="display:flex;justify-content:space-between;align-items:center;background:var(--s3);border-radius:9px;padding:11px 14px;text-decoration:none;color:var(--tx)">
+        <div><div style="font-weight:700">${s.name}</div><div style="font-size:11px;color:var(--tx2)">${s.phone}</div></div>
+        <span style="color:var(--gr);font-weight:700">${total} د.م 💬</span></a>`;
+    }).join('')}
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:14px;width:100%" onclick="closeModal('modal-bulk')">إغلاق</button>`;
+  document.getElementById('modal-bulk').classList.remove('hidden');
+};
+
+// ── Subscribers ───────────────────────────────────
+function renderSubs(){
+  const sc=document.getElementById('sub-count-sb'); if(sc)sc.textContent=subs.length+' مشترك';
+  const q=(document.getElementById('search-inp')||{}).value||'';
+  const f=(document.getElementById('filter-sel')||{}).value||'all';
+  const z=(document.getElementById('zone-filter')||{}).value||'all';
+  const list=subs.filter(s=>{
+    if(!s.name.includes(q)&&!s.phone.includes(q))return false;
+    if(z!=='all'&&(s.zone||'')!==z)return false;
+    const pay=getPay(s,NY);
+    if(f==='paid')   return!!pay[NM];
+    if(f==='unpaid') return!pay[NM];
+    if(f==='debtors')return getDebt(s).unpaid>0;
+    return true;
+  });
+  if(!list.length){document.getElementById('sub-grid').innerHTML='<div style="text-align:center;padding:40px;color:var(--tx3)">لا توجد نتائج</div>';return;}
+  document.getElementById('sub-grid').innerHTML=list.map(s=>{
+    const{unpaid,total}=getDebt(s), pay=getPay(s,NY), paidNow=!!pay[NM];
+    const border=unpaid>0?'#ef444420':paidNow?'#22c55e18':'#252525';
+    const wa=total>0?`<a href="https://wa.me/212${s.phone.slice(1)}?text=${encodeURIComponent(`السلام عليكم ${s.name}، يرجى تسديد اشتراك الإنترنت. المبلغ المتأخر: ${total} درهم. شكراً — Smart WiFi Azilal`)}" target="_blank" style="font-size:12px;font-weight:700;padding:6px 10px;border-radius:9px;background:#22c55e18;color:var(--gr);border:1px solid #22c55e33;text-decoration:none">💬</a>`:'';
+    return`<div class="sub-card" style="border-color:${border}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="display:flex;gap:9px;align-items:center">
+          <div class="sub-av">${s.name.charAt(0)}</div>
+          <div><div style="font-weight:700;font-size:15px">${s.name}</div>
+          <div style="font-size:11px;color:var(--tx2)">${s.phone}</div>
+          ${s.zone?`<span class="badge b-blue" style="font-size:10px">${s.zone}</span>`:''}</div>
+        </div>
+        <span class="badge ${paidNow?'b-green':'b-red'}">${paidNow?'✓ مدفوع':'✗ متأخر'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--s3);border-radius:8px;padding:8px 11px">
+          <div style="font-size:10px;color:var(--tx3)">الاشتراك/شهر</div>
+          <div style="font-weight:800;color:var(--g)">${s.fee} د.م</div>
+        </div>
+        <div style="background:${total>0?'#ef444410':'#22c55e10'};border:1px solid ${total>0?'#ef444428':'#22c55e28'};border-radius:8px;padding:8px 11px">
+          <div style="font-size:10px;color:var(--tx3)">المتأخرات</div>
+          <div style="font-weight:800;color:${total>0?'var(--rd)':'var(--gr)'}">${total>0?total+' د.م':'لا شيء ✓'}</div>
+        </div>
+      </div>
+      <div class="sub-actions">
+        <button class="btn btn-gold btn-sm" onclick="openPay('${s.fbKey}')">📅 الأشهر</button>
+        <button class="btn btn-dark btn-sm" onclick="openEdit('${s.fbKey}')">✏️ تعديل</button>
+        <button class="btn btn-red btn-sm"  onclick="openDel('${s.fbKey}')">🗑</button>
+        ${wa}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Add/Edit/Delete ───────────────────────────────
+window.openAdd = function(){
+  ['add-name','add-phone','add-fee','add-zone'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('add-err').style.display='none';
+  document.getElementById('modal-add').classList.remove('hidden');
+};
+window.addSub = async function(){
+  const name=document.getElementById('add-name').value.trim();
+  const phone=document.getElementById('add-phone').value.trim();
+  const fee=+document.getElementById('add-fee').value;
+  const zone=document.getElementById('add-zone').value.trim();
+  const e=document.getElementById('add-err');
+  if(!name||phone.length<9||fee<1){e.textContent='يرجى ملء الحقول الإلزامية';e.style.display='block';return;}
+  e.style.display='none'; sync('loading');
+  try{
+    const ns={name,phone,fee,zone:zone||'',payments:{[NY]:Array(12).fill(0)},history:[]};
+    const r=await push(ref(db,'subscribers'),ns);
+    subs.push({...ns,fbKey:r.key});
+    sync('ok'); closeModal('modal-add'); updateZoneFilter(); renderSubs(); renderDashboard();
+  }catch{sync('err');e.textContent='فشل الحفظ';e.style.display='block';}
+};
+
+window.openEdit = function(k){
+  const s=subs.find(s=>s.fbKey===k);
+  document.getElementById('edit-id').value=k;
+  document.getElementById('edit-name').value=s.name;
+  document.getElementById('edit-phone').value=s.phone;
+  document.getElementById('edit-fee').value=s.fee;
+  document.getElementById('edit-zone').value=s.zone||'';
+  document.getElementById('modal-edit').classList.remove('hidden');
+};
+window.saveEdit = async function(){
+  const k=document.getElementById('edit-id').value;
+  const name=document.getElementById('edit-name').value.trim();
+  const phone=document.getElementById('edit-phone').value.trim();
+  const fee=+document.getElementById('edit-fee').value;
+  const zone=document.getElementById('edit-zone').value.trim();
+  if(!name||phone.length<9||fee<1)return;
+  const s=subs.find(s=>s.fbKey===k);
+  const upd={...s,name,phone,fee,zone}; delete upd.fbKey;
+  sync('loading');
+  try{
+    await set(ref(db,`subscribers/${k}`),upd);
+    subs=subs.map(s=>s.fbKey===k?{...upd,fbKey:k}:s);
+    sync('ok'); closeModal('modal-edit'); updateZoneFilter(); renderSubs(); renderDashboard();
+  }catch{sync('err');}
+};
+
+window.openDel = function(k){delFbKey=k; document.getElementById('modal-del').classList.remove('hidden');};
+window.confirmDel = async function(){
+  sync('loading');
+  try{
+    await remove(ref(db,`subscribers/${delFbKey}`));
+    subs=subs.filter(s=>s.fbKey!==delFbKey);
+    sync('ok'); closeModal('modal-del'); renderSubs(); renderDashboard();
+  }catch{sync('err');}
+};
+
+// ── Payments ──────────────────────────────────────
+window.openPay = function(k){
+  payFbKey=k;
+  const s=subs.find(s=>s.fbKey===k);
+  document.getElementById('pay-title').textContent='📅 '+s.name;
+  const sel=document.getElementById('pay-year');
+  let opts=''; for(let y=2024;y<=2037;y++)opts+=`<option value="${y}"${y===NY?' selected':''}>${y}</option>`;
+  sel.innerHTML=opts;
+  document.getElementById('modal-pay').classList.remove('hidden');
+  renderPayGrid();
+};
+window.renderPayGrid = function(){
+  const s=subs.find(s=>s.fbKey===payFbKey);
+  const yr=+document.getElementById('pay-year').value;
+  const pay=getPay(s,yr);
+  const{unpaid,total}=getDebt(s,yr);
+  document.getElementById('pay-debt').textContent=`متأخر: ${total} د.م (${unpaid} شهر)`;
+  document.getElementById('pay-grid').innerHTML=MONTHS.map((m,i)=>{
+    const p=!!pay[i], f=i>NM&&yr>=NY;
+    const cls=p?'p-paid':f?'p-future':'p-unpaid';
+    const oc=f?'':` onclick="togglePay(${i})"`;
+    return`<button class="pay-cell ${cls}"${oc}><div>${m}</div><div style="font-size:14px;margin-top:2px">${p?'✓':f?'—':'✗'}</div></button>`;
+  }).join('');
+};
+window.togglePay = async function(mi){
+  const s=subs.find(s=>s.fbKey===payFbKey);
+  const yr=+document.getElementById('pay-year').value;
+  ensurePay(s,yr);
+  const wasPaid=s.payments[yr][mi];
+  s.payments[yr][mi]=wasPaid?0:1;
+  if(!wasPaid){
+    if(!s.history)s.history=[];
+    const entry={month:mi,year:yr,amount:s.fee,ts:Date.now(),monthName:MONTHS[mi]};
+    s.history.push(entry);
+    showReceipt(s,entry);
+  }
+  sync('loading');
+  try{
+    const upd={...s}; delete upd.fbKey;
+    await set(ref(db,`subscribers/${payFbKey}`),upd);
+    sync('ok');
+  }catch{sync('err');}
+  renderPayGrid(); renderSubs(); renderDashboard();
+};
+
+// ── Receipt ───────────────────────────────────────
+function showReceipt(sub,entry){
+  lastReceipt={sub,entry};
+  document.getElementById('receipt-content').innerHTML=`
+    <div class="receipt">
+      <div style="text-align:center;margin-bottom:14px">
+        <svg width="36" height="36" viewBox="0 0 80 80" fill="none">
+          <path d="M40 62 L14 36 Q26 20 40 20 Q54 20 66 36 Z" fill="#F5C518"/>
+          <path d="M40 62 L20 43 Q29 31 40 31 Q51 31 60 43 Z" fill="#333"/>
+          <path d="M40 62 L28 51 Q34 44 40 44 Q46 44 52 51 Z" fill="#F5C518"/>
+          <circle cx="40" cy="62" r="4" fill="#F5C518"/>
+          <path d="M6 28 Q22 6 40 6 Q58 6 74 28" stroke="#F5C518" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div style="font-weight:900;font-size:16px">Smart WiFi Azilal</div>
+        <div style="font-size:11px;color:#666">وصل دفع رسمي 📡</div>
+      </div>
+      <hr class="receipt-divider"/>
+      <div class="receipt-row"><span style="color:#666">المشترك</span><span style="font-weight:700">${sub.name}</span></div>
+      <div class="receipt-row"><span style="color:#666">الهاتف</span><span style="font-weight:700">${sub.phone}</span></div>
+      ${sub.zone?`<div class="receipt-row"><span style="color:#666">المنطقة</span><span style="font-weight:700">${sub.zone}</span></div>`:''}
+      <div class="receipt-row"><span style="color:#666">الشهر</span><span style="font-weight:700">${entry.monthName} ${entry.year}</span></div>
+      <div class="receipt-row"><span style="color:#666">التاريخ</span><span style="font-weight:700">${new Date(entry.ts).toLocaleDateString('ar-MA')}</span></div>
+      <hr class="receipt-divider"/>
+      <div class="receipt-total">
+        <span style="font-weight:700">المبلغ المدفوع</span>
+        <span style="font-weight:900;font-size:18px">${entry.amount} د.م</span>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#999;margin-top:12px">شكراً على ثقتكم — 📞 0602359188</div>
+    </div>`;
+  document.getElementById('modal-receipt').classList.remove('hidden');
+}
+window.shareReceipt = function(){
+  if(!lastReceipt)return;
+  const{sub,entry}=lastReceipt;
+  const msg=encodeURIComponent(`🧾 وصل دفع — Smart WiFi Azilal\n━━━━━━━━━━━\n👤 ${sub.name}\n📅 ${entry.monthName} ${entry.year}\n💰 ${entry.amount} درهم\n✅ تم الدفع بنجاح\n━━━━━━━━━━━\n📡 Smart WiFi Azilal | 📞 0602359188`);
+  window.open(`https://wa.me/212${sub.phone.slice(1)}?text=${msg}`,'_blank');
+};
+
+// ── Reports ───────────────────────────────────────
+window.renderReports = function renderReports(){
+  const rm=document.getElementById('report-month');
+  const ry=document.getElementById('report-year');
+  const m=rm?+rm.value:NM;
+  const y=ry?+ry.value:NY;
+  const paidList=subs.filter(s=>!!getPay(s,y)[m]);
+  const unpaidList=subs.filter(s=>!getPay(s,y)[m]);
+  const collected=paidList.reduce((a,s)=>a+s.fee,0);
+  const pending=unpaidList.reduce((a,s)=>a+s.fee,0);
+  const totalDebt=subs.reduce((a,s)=>a+getDebt(s,y).total,0);
+  const pct=subs.length?Math.round(paidList.length/subs.length*100):0;
+  const zones={};
+  subs.forEach(s=>{
+    const z=s.zone||'غير محدد';
+    if(!zones[z])zones[z]={total:0,paid:0,fees:0};
+    zones[z].total++; if(!!getPay(s,y)[m])zones[z].paid++; zones[z].fees+=s.fee;
+  });
+  document.getElementById('report-content').innerHTML=`
+    <div style="font-size:13px;color:var(--tx2);margin-bottom:14px">تقرير شهر ${MONTHS[m]} ${y}</div>
+    <div class="report-grid">
+      <div class="report-card"><div class="report-val" style="color:var(--gr)">${collected} د.م</div><div class="report-lbl">تم تحصيله</div></div>
+      <div class="report-card"><div class="report-val" style="color:var(--rd)">${pending} د.م</div><div class="report-lbl">لم يُدفع بعد</div></div>
+      <div class="report-card"><div class="report-val" style="color:var(--or)">${totalDebt} د.م</div><div class="report-lbl">إجمالي الديون</div></div>
+      <div class="report-card"><div class="report-val" style="color:var(--g)">${pct}%</div><div class="report-lbl">نسبة التحصيل</div></div>
+      <div class="report-card"><div class="report-val" style="color:var(--bl)">${paidList.length}</div><div class="report-lbl">دفعوا</div></div>
+      <div class="report-card"><div class="report-val" style="color:var(--rd)">${unpaidList.length}</div><div class="report-lbl">لم يدفعوا</div></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:12px">📍 توزيع حسب المنطقة</div>
+      ${Object.entries(zones).map(([z,d])=>`
+        <div style="display:flex;justify-content:space-between;background:var(--s3);border-radius:9px;padding:10px 13px;margin-bottom:7px">
+          <div><div style="font-weight:700">${z}</div><div style="font-size:11px;color:var(--tx2)">${d.total} مشترك</div></div>
+          <div style="text-align:left"><div style="color:var(--g);font-weight:700">${d.fees} د.م</div><div style="font-size:11px;color:var(--gr)">${d.paid}/${d.total} دفعوا</div></div>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:13px;margin-bottom:12px;color:var(--rd)">✗ لم يدفعوا (${unpaidList.length})</div>
+      ${unpaidList.length===0?'<div style="color:var(--gr);text-align:center;padding:16px">✅ الجميع دفع هذا الشهر!</div>':
+        unpaidList.map(s=>`<div style="display:flex;justify-content:space-between;background:var(--s3);border-radius:9px;padding:10px 13px;margin-bottom:7px">
+          <div><div style="font-weight:700">${s.name}</div><div style="font-size:11px;color:var(--tx2)">${s.phone}</div></div>
+          <a href="https://wa.me/212${s.phone.slice(1)}?text=${encodeURIComponent(`السلام عليكم ${s.name}، يرجى تسديد اشتراك ${MONTHS[m]} ${y}. Smart WiFi Azilal`)}" target="_blank"
+            style="font-size:12px;font-weight:700;padding:5px 10px;border-radius:7px;background:#22c55e18;color:var(--gr);border:1px solid #22c55e33;text-decoration:none">💬</a>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── History ───────────────────────────────────────
+window.renderHistory = function renderHistory(){
+  const q=(document.getElementById('hist-search')||{}).value||'';
+  let all=[];
+  subs.forEach(s=>{
+    if(!(s.history&&s.history.length))return;
+    if(q&&!s.name.includes(q)&&!s.phone.includes(q))return;
+    s.history.forEach(h=>all.push({...h,subName:s.name,subPhone:s.phone,subZone:s.zone||''}));
+  });
+  all.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const cont=document.getElementById('history-content');
+  if(!all.length){cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--tx3)">لا يوجد سجل بعد.<br/><span style="font-size:12px">تُسجَّل الدفعات تلقائياً عند تحديد الشهر كـمدفوع</span></div>';return;}
+  cont.innerHTML=`<div style="font-size:12px;color:var(--tx2);margin-bottom:12px">${all.length} عملية دفع مسجلة</div>`+
+    all.map(h=>`<div class="hist-item">
+      <div>
+        <div style="font-weight:700;font-size:14px">${h.subName}</div>
+        <div style="font-size:11px;color:var(--tx2)">${h.subPhone}${h.subZone?' · '+h.subZone:''}</div>
+        <div style="font-size:11px;color:var(--tx3)">${h.monthName} ${h.year} — ${h.ts?new Date(h.ts).toLocaleDateString('ar-MA',{day:'numeric',month:'short',year:'numeric'}):''}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-weight:800;color:var(--gr);font-size:16px">${h.amount} د.م</div>
+        <span class="badge b-green" style="font-size:10px">✓ مدفوع</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── Client ────────────────────────────────────────
+window.doClientLogin = async function(){
+  const phone=document.getElementById('client-phone').value.trim();
+  document.getElementById('err-client').style.display='none';
+  try{
+    const snap=await get(ref(db,'subscribers'));
+    if(snap.exists()){
+      const found=Object.entries(snap.val()).map(([k,v])=>({...v,fbKey:k})).find(s=>s.phone===phone);
+      if(found){clientS=found;hide('login-screen');show('client-app');renderClient();return;}
+    }
+  }catch{}
+  document.getElementById('err-client').style.display='block';
+};
+
+window.clientLogout = function(){ hide('client-app'); show('login-screen'); document.getElementById('client-phone').value=''; };
+
+function renderClient(){
+  const s=clientS, pay=getPay(s,NY);
+  const{unpaid,total}=getDebt(s), paid=!!pay[NM];
+  const months=MONTHS.map((m,i)=>{
+    const p=!!pay[i],f=i>NM;
+    return`<div style="background:${p?'#22c55e18':f?'var(--s4)':'#ef444418'};border:1px solid ${p?'#22c55e38':f?'#33333338':'#ef444438'};border-radius:8px;padding:7px 3px;text-align:center;font-size:10px;color:${p?'var(--gr)':f?'var(--tx3)':'var(--rd)'}">
+      <div style="font-weight:700">${m}</div><div style="font-size:13px">${p?'✓':f?'—':'✗'}</div></div>`;
+  }).join('');
+  const wa=total>0?`<a href="https://wa.me/2120602359188?text=${encodeURIComponent(`السلام عليكم، أنا ${s.name} أريد تسوية اشتراكي (${total} درهم)`)}" target="_blank"
+    style="display:block;text-align:center;padding:12px;background:#22c55e18;border:1px solid #22c55e33;border-radius:9px;color:var(--gr);text-decoration:none;font-weight:700">💬 تواصل مع الإدارة</a>`:'';
+  document.getElementById('client-detail').innerHTML=`
+    <div style="background:var(--s2);border:1px solid #F5C51822;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#F5C518,#c9a010);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#111;flex-shrink:0">${s.name.charAt(0)}</div>
+        <div style="flex:1"><div style="font-weight:800;font-size:17px">${s.name}</div><div style="font-size:12px;color:var(--tx2)">${s.phone}</div>
+        ${s.zone?`<span class="badge b-blue" style="font-size:10px">${s.zone}</span>`:''}</div>
+        <span class="badge ${paid?'b-green':'b-red'}">${paid?'✓ مدفوع':'✗ متأخر'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div style="background:var(--s3);border-radius:9px;padding:10px 13px">
+          <div style="font-size:11px;color:var(--tx3)">الاشتراك الشهري</div>
+          <div style="font-weight:800;color:var(--g);font-size:18px">${s.fee} د.م</div>
+        </div>
+        <div style="background:${total>0?'#ef444410':'#22c55e10'};border:1px solid ${total>0?'#ef444428':'#22c55e28'};border-radius:9px;padding:10px 13px">
+          <div style="font-size:11px;color:var(--tx3)">المتأخرات</div>
+          <div style="font-weight:800;color:${total>0?'var(--rd)':'var(--gr)'};font-size:18px">${total>0?total+' د.م':'لا شيء ✓'}</div>
+        </div>
+      </div>
+      <div><div style="font-weight:700;font-size:13px;margin-bottom:9px">حالة الأشهر — ${NY}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${months}</div></div>
+      ${wa}
+    </div>`;
+}
+</script>
+</body>
+</html>
